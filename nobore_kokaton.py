@@ -1,8 +1,8 @@
 print("hello world")
-import pygame
+import pygame as pg
 import random
 
-pygame.init()
+pg.init()
 
 screen_width = 800
 screen_height = 1000
@@ -10,8 +10,8 @@ screen_height = 1000
 white = (255, 255, 255)
 black = (0, 0, 0)
 
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("上に向かうゲーム")
+screen = pg.display.set_mode((screen_width, screen_height))
+pg.display.set_caption("月まではばたけ!!こうかとん!!!!")
 
 #プレイヤーのサイズと初期位置、移動速度を設定
 player_width = 50
@@ -24,7 +24,7 @@ player_speed = 10
 max_bullets = 10
 bullet_width = 10
 bullet_height = 10
-bullet_speed = 10
+bullet_speed = 5
 
 min_bullet_interval = 10  # 最小の弾の出現間隔
 max_bullet_interval = 30  # 最大の弾の出現間隔
@@ -32,7 +32,9 @@ bullet_interval = 0  # 初期の出現間隔
 bullet_timer = 0  # タイマー
 bullets = []
 
-
+# 背景画像の読み込み
+bg_img = pg.image.load("ex05/fig/kumo38.png")
+rotated_bg_img = pg.transform.flip(bg_img, False, True)
 
 #一定の間隔で複数の弾を生成。ランダムな位置から弾を生成し、リストbulletsに追加
 def create_bullet():
@@ -55,8 +57,14 @@ def is_collision(player_x, player_y, bullet_x, bullet_y):
     return False
 
 running = True
-clock = pygame.time.Clock()
+clock = pg.time.Clock()
 
+# 画像をスクロールさせる為に必要な変数ども
+bg_height = 1080
+tmr = 0
+bg_y = 0
+bg_y_2 = bg_height
+scroll_area = 1/2 # スクロールを開始する範囲（一番上から）
 
 #プレイヤーのキー入力
 #弾の生成、移動、描画、画面外に出た弾は削除
@@ -65,26 +73,54 @@ clock = pygame.time.Clock()
 while running:
     screen.fill(white) 
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
             running = False
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] and player_x > 0:
+    # 背景が下端に到達したら反対側にやる
+    if bg_y >= bg_height:
+        bg_y = -bg_height
+    if bg_y_2 >= bg_height:
+        bg_y_2 = -bg_height
+
+    # 背景の表示
+    screen.blit(bg_img, [0, bg_y])
+    screen.blit(rotated_bg_img, [0, bg_y_2])
+    
+    # 背景の座標を更新
+    tmr += 1
+
+    keys = pg.key.get_pressed()
+    
+    if keys[pg.K_LEFT] and player_x > 0:
         player_x -= player_speed
-    if keys[pygame.K_RIGHT] and player_x < screen_width - player_width:
+
+    if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
         player_x += player_speed
-    if keys[pygame.K_UP] and player_y > 0:
-        player_y -= player_speed
-    if keys[pygame.K_DOWN] and player_y < screen_height - player_height:
-        player_y += player_speed
+
+    # 上移動
+    if keys[pg.K_UP]:
+        # if player_y > 0:
+        #     player_y -= player_speed
+
+        # 画面上部4分の1範囲にいるときはスクロールする
+        if player_y < (screen_height * scroll_area):
+            bg_y += player_speed
+            bg_y_2 += player_speed
+        else:
+            player_y -= player_speed
+
+    # 下移動
+    if keys[pg.K_DOWN]:
+        if player_y < screen_height - player_height:
+            player_y += player_speed
 
     #生成
     create_bullet()
 
     for bullet in bullets[:]:
         bullet[1] += bullet_speed
-        pygame.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
+        pg.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
 
         if bullet[1] > screen_height:
             bullets.remove(bullet)
@@ -97,9 +133,9 @@ while running:
             running = False  # ゲームオーバー
     
 
-    pygame.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
-    pygame.display.update()
+    pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
+    pg.display.update()
 
     clock.tick(60)
 
-pygame.quit()
+pg.quit()
