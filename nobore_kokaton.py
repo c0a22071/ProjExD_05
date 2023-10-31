@@ -70,6 +70,8 @@ font = pygame.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
 
 while running:
     screen.fill(white)
+    
+    #時間の表示
     txt = font.render(f"Time:{int(tmr/60):03}", True, (0, 0, 255))
     screen.blit(txt, [600, 10])
     #screen.blit(bg_img, [0, 0])
@@ -79,7 +81,7 @@ while running:
             running = False
 
     keys = pygame.key.get_pressed()
-    if r <= 2000:
+    if r <= 2000:#ゴールでないなら実行
         if keys[pygame.K_LEFT] and player_x > 0:
             player_x -= player_speed
         if keys[pygame.K_RIGHT] and player_x < screen_width - player_width:
@@ -108,10 +110,12 @@ while running:
 
                 running = False  # ゲームオーバー
     
+    #ゴール時の処理
     if r >= 2000:
         r = 20000
         txt2 = font.render("game clear", True, (255, 0, 255))
         screen.blit(txt2, [300, 500])
+    #ゴールしていないなら
     else:
         txt3 = font.render(f"ゴールまで{2000-r:03}m", True, (255, 0, 255))
         screen.blit(txt3, [0, 10])
