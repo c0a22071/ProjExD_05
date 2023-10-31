@@ -57,17 +57,46 @@ def is_collision(player_x, player_y, bullet_x, bullet_y):
 running = True
 clock = pygame.time.Clock()
 
-
+#障害物(壁)のクラス
+class Wall:
+    """
+    障害物に関するクラス
+    """
+    colors = [(0, 0, 0)]
+    def __init__(self):
+        """
+        引数に基づき壁Surfaceを作成する
+        引数1 color: 壁の色
+        """
+        color = __class__.colors[0]
+        self.img = pygame.Surface((300,100))
+        x = random.randint(0, screen_width-100)
+        y = random.randint(0, screen_height-50)
+        pygame.draw.rect(self.img, color, (x-150,y-50,300,100))
+        self.rct = self.img.get_rect()
+        self.rct.center = random.randint(0, screen_width-100), random.randint(0, screen_height-50)
+        
+    def update(self, screen:pygame.Surface):
+        """
+        引数 screen 画面Surface
+        """
+        screen.blit(self.img, self.rct)
 #プレイヤーのキー入力
 #弾の生成、移動、描画、画面外に出た弾は削除
 #プレイヤーと弾の衝突を検出、衝突した場合はゲームを終了。
 
+#壁のインスタンスを複数つくる
+walls = [Wall() for i in range(9)]
 while running:
     screen.fill(white) 
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    #複数の壁を表示させる
+    for wall in walls:
+        wall.update(screen)
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] and player_x > 0:
@@ -81,6 +110,7 @@ while running:
 
     #生成
     create_bullet()
+    
 
     for bullet in bullets[:]:
         bullet[1] += bullet_speed
