@@ -1,8 +1,8 @@
 print("hello world")
-import pygame
+import pygame as pg
 import random
 
-pygame.init()
+pg.init()
 
 screen_width = 800
 screen_height = 1000
@@ -10,8 +10,8 @@ screen_height = 1000
 white = (255, 255, 255)
 black = (0, 0, 0)
 
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("上に向かうゲーム")
+screen = pg.display.set_mode((screen_width, screen_height))
+pg.display.set_caption("上に向かうゲーム")
 
 #プレイヤーのサイズと初期位置、移動速度を設定
 player_width = 50
@@ -55,7 +55,45 @@ def is_collision(player_x, player_y, bullet_x, bullet_y):
     return False
 
 running = True
-clock = pygame.time.Clock()
+clock = pg.time.Clock()
+
+
+
+move_key_dic = {
+                pg.K_UP: (0, -5),
+                pg.K_DOWN: (0, +5),
+                pg.K_LEFT: (-5, 0),
+                pg.K_RIGHT: (+5, 0),
+}
+
+def kk_direction():
+    kk_img = pg.image.load("ex02/fig/3.png")
+    kk_img = pg.transform.rotozoom(kk_img, 0, 2.0)
+    kk_trans_img = pg.transform.flip(kk_img, True, False)
+    return {
+        (0, 0): kk_img,
+        (0, -5): pg.transform.rotozoom(kk_trans_img, 90, 1.0),
+        (-5, 0): kk_img,
+        (+5, 0): kk_trans_img,
+        (+5, +5): pg.transform.rotozoom(kk_trans_img, -45, 1.0),
+        (0, +5): pg.transform.rotozoom(kk_trans_img, -90, 1.0),
+        (-5, +5): pg.transform.rotozoom(kk_img, 45, 1.0),
+        (-5, -5): pg.transform.rotozoom(kk_img, 45, 1.0),
+        (+5, -5): pg.transform.rotozoom(kk_trans_img, 45, 1.0)
+    }
+
+def check_bound(obj_domain: pg.Rect):
+    """"
+    引数：こうかとんRectか、ばくだんRect
+    戻値：タプル（横方向判定結果、縦方向判定結果）
+    画面内ならTrue, 画面外ならFalse
+    """
+    yoko, tate = True, True
+    if (obj_domain.left < 0) or (screen_width < obj_domain.right): # 横方向判定
+        yoko = False
+    if (obj_domain.top < 0) or (screen_height < obj_domain.bottom): # 縦方向判定
+        tate = False
+    return yoko, tate
 
 
 #プレイヤーのキー入力
@@ -65,18 +103,18 @@ clock = pygame.time.Clock()
 while running:
     screen.fill(white) 
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
             running = False
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] and player_x > 0:
+    keys = pg.key.get_pressed()
+    if keys[pg.K_LEFT] and player_x > 0:
         player_x -= player_speed
-    if keys[pygame.K_RIGHT] and player_x < screen_width - player_width:
+    if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
         player_x += player_speed
-    if keys[pygame.K_UP] and player_y > 0:
+    if keys[pg.K_UP] and player_y > 0:
         player_y -= player_speed
-    if keys[pygame.K_DOWN] and player_y < screen_height - player_height:
+    if keys[pg.K_DOWN] and player_y < screen_height - player_height:
         player_y += player_speed
 
     #生成
@@ -84,7 +122,7 @@ while running:
 
     for bullet in bullets[:]:
         bullet[1] += bullet_speed
-        pygame.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
+        pg.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
 
         if bullet[1] > screen_height:
             bullets.remove(bullet)
@@ -97,9 +135,9 @@ while running:
             running = False  # ゲームオーバー
     
 
-    pygame.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
-    pygame.display.update()
+    # pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
+    pg.display.update()
 
     clock.tick(60)
 
-pygame.quit()
+pg.quit()
