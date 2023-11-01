@@ -34,6 +34,8 @@ bullets = []
 
 
 
+
+
 #一定の間隔で複数の弾を生成。ランダムな位置から弾を生成し、リストbulletsに追加
 def create_bullet():
     global bullet_timer, bullet_interval
@@ -47,12 +49,12 @@ def create_bullet():
         bullet_interval = random.randint(min_bullet_interval, max_bullet_interval)
         bullet_timer = 0
 
-#プレイヤーと弾の衝突を判定
-def is_collision(player_x, player_y, bullet_x, bullet_y):
-    if player_x < bullet_x < player_x + player_width or bullet_x < player_x < bullet_x + bullet_width:
-        if player_y < bullet_y < player_y + player_height or bullet_y < player_y < bullet_y + bullet_height:
-            return True
-    return False
+# #プレイヤーと弾の衝突を判定
+# def is_collision(player_x, player_y, bullet_x, bullet_y):
+#     if player_x < bullet_x < player_x + player_width or bullet_x < player_x < bullet_x + bullet_width:
+#         if player_y < bullet_y < player_y + player_height or bullet_y < player_y < bullet_y + bullet_height:
+#             return True
+#     return False
 
 running = True
 clock = pg.time.Clock()
@@ -66,39 +68,59 @@ move_key_dic = {
                 pg.K_RIGHT: (+5, 0),
 }
 
-def kk_direction():
-    kk_img = pg.image.load("ex02/fig/3.png")
-    kk_img = pg.transform.rotozoom(kk_img, 0, 2.0)
-    kk_trans_img = pg.transform.flip(kk_img, True, False)
+### キャラクターの方向を管理する関数
+def player_direction(img_path: str):
+    player_img = pg.image.load(f"{img_path}")
+    player_img = pg.transform.rotozoom(player_img, 0, 2.0)
+    player_trans_img = pg.transform.flip(player_img, True, False)
+    
     return {
-        (0, 0): kk_img,
-        (0, -5): pg.transform.rotozoom(kk_trans_img, 90, 1.0),
-        (-5, 0): kk_img,
-        (+5, 0): kk_trans_img,
-        (+5, +5): pg.transform.rotozoom(kk_trans_img, -45, 1.0),
-        (0, +5): pg.transform.rotozoom(kk_trans_img, -90, 1.0),
-        (-5, +5): pg.transform.rotozoom(kk_img, 45, 1.0),
-        (-5, -5): pg.transform.rotozoom(kk_img, 45, 1.0),
-        (+5, -5): pg.transform.rotozoom(kk_trans_img, 45, 1.0)
+        (0, 0): player_img,
+        (0, -5): pg.transform.rotozoom(player_trans_img, 90, 1.0),
+        (-5, 0): player_img,
+        (+5, 0): player_trans_img,
+        (+5, +5): pg.transform.rotozoom(player_trans_img, -45, 1.0),
+        (0, +5): pg.transform.rotozoom(player_trans_img, -90, 1.0),
+        (-5, +5): pg.transform.rotozoom(player_img, 45, 1.0),
+        (-5, -5): pg.transform.rotozoom(player_img, 45, 1.0),
+        (+5, -5): pg.transform.rotozoom(player_trans_img, 45, 1.0)
     }
 
+### プレイヤーが壁抜けをしないようにする関数
 def check_bound(obj_domain: pg.Rect):
     """"
     引数：こうかとんRectか、ばくだんRect
     戻値：タプル（横方向判定結果、縦方向判定結果）
     画面内ならTrue, 画面外ならFalse
     """
-    yoko, tate = True, True
-    if (obj_domain.left < 0) or (screen_width < obj_domain.right): # 横方向判定
-        yoko = False
-    if (obj_domain.top < 0) or (screen_height < obj_domain.bottom): # 縦方向判定
-        tate = False
-    return yoko, tate
+    horizontal, vertical = True, True
+    
+    # 横方向判定
+    if (obj_domain.left < 0) or (screen_width < obj_domain.right):
+        horizontal = False
+    
+    # 縦方向判定
+    if (obj_domain.top < 0) or (screen_height < obj_domain.bottom):
+        vertical = False
+    return horizontal, vertical
 
 
 #プレイヤーのキー入力
 #弾の生成、移動、描画、画面外に出た弾は削除
 #プレイヤーと弾の衝突を検出、衝突した場合はゲームを終了。
+
+# 🚩
+"""
+プレイキャラクター初期設定
+"""
+# player_img = pg.image.load("ex05/3.png")
+# player_img = pg.transform.rotozoom(player_img, 0, 2.0)
+
+player_direct_dic = player_direction("ex05/3.png") # 戻り値は辞書
+player_img = player_direct_dic[(0, 0)] # 初期画像
+player_rect = player_img.get_rect()
+player_rect.center = (player_x, player_y) # 初期位置設定
+# 🚩
 
 while running:
     screen.fill(white) 
@@ -116,6 +138,22 @@ while running:
         player_y -= player_speed
     if keys[pg.K_DOWN] and player_y < screen_height - player_height:
         player_y += player_speed
+    
+    # 🚩
+    # # プレイヤーの移動
+    # for key, move_tpl in move_key_dic.items(): # dic={Press_KEY: (x, y)}
+    #     if keys[key]:
+    
+    player_img = player_direct_dic[(player_x, player_y)]
+    player_rect.move_ip(player_x, player_y)
+    
+    # プレイヤーはみ出し判定   
+    if check_bound(player_rect) != (True, True):
+        player_rect.move_ip(-player_x, -player_y)
+        
+    # 移動後の座標にプレイヤーを表示
+    screen.blit(player_img, player_rect)
+    # 🚩
 
     #生成
     create_bullet()
@@ -135,6 +173,7 @@ while running:
             running = False  # ゲームオーバー
     
 
+    # screen.blit(player_img, [player_x, player_y])
     # pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
     pg.display.update()
 
