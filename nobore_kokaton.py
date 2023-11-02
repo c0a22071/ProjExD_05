@@ -57,36 +57,82 @@ def is_collision(player_x, player_y, bullet_x, bullet_y):
 running = True
 clock = pygame.time.Clock()
 
+def check_bound(obj: pygame.Rect) -> tuple[bool, bool]:
+    """
+    オブジェクトが画面内か画面外かを判定し，真理値タプルを返す
+    引数 obj：オブジェクト（爆弾，こうかとん，ビーム）SurfaceのRect
+    戻り値：横方向，縦方向のはみ出し判定結果（画面内：True／画面外：False）
+    """
+    yoko, tate = True, True
+    if obj.left < 0 or screen_width < obj.right:  # 横方向のはみ出し判定
+        yoko = False
+    if obj.top < 0 or screen_height < obj.bottom:  # 縦方向のはみ出し判定
+        tate = False
+    return yoko, tate
+
+def check_wall(obj: pygame.Rect):
+    lst = [0 for i in range(4)]
+    for i in range(len(lst)):
+        if i == 0:
+            if (obj.right>=player_x) and ((player_y+player_height>=obj.top) and (player_y<=obj.bottom)):
+                lst[i] = 1
+            else:
+                lst[i] = 0
+        elif i == 1:
+            if (obj.left<=player_x+player_width) and ((player_y+player_height>=obj.top) and (player_y<=obj.bottom)):
+                lst[i] = 1
+            else:
+                lst[i] = 0
+        elif i == 2:
+            if (obj.bottom>=player_y) and ((player_x+player_width>=obj.left) and (player_x<=obj.right)):
+                lst[i] = 1
+            else:
+                lst[i] = 0
+        elif i == 3:
+            if (obj.top<=player_y+player_height) and ((player_x+player_width>=obj.left) and (player_x<=obj.right)):
+                lst[i] = 1
+            else:
+                lst[i] = 0
+            return lst
+
 #障害物(壁)のクラス
 class Wall:
     """
     障害物に関するクラス
     """
-    colors = [(0, 0, 0)]
-    def __init__(self):
+    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)]
+    def __init__(self, height):
         """
         引数に基づき壁Surfaceを作成する
         引数1 color: 壁の色
         """
-        color = __class__.colors[0]
-        self.img = pygame.Surface((300,100))
-        x = random.randint(0, screen_width-100)
-        y = random.randint(0, screen_height-50)
-        pygame.draw.rect(self.img, color, (x-150,y-50,300,100))
-        self.rct = self.img.get_rect()
-        self.rct.center = random.randint(0, screen_width-100), random.randint(0, screen_height-50)
-        
+        color = random.choice(__class__.colors)
+        self.img = pygame.Surface((280,90))
+        self.img.fill(color)
+        x = random.randint(0, screen_width-280)
+        y = height
+        pygame.draw.rect(self.img, color, (x,y-45,x+280,y+45))
+        self.img.set_colorkey((0, 0, 0))
+        self.rect = self.img.get_rect()
+        self.rect.center = x+150, y
+        self.speed = 6.5
+
     def update(self, screen:pygame.Surface):
         """
         引数 screen 画面Surface
         """
-        screen.blit(self.img, self.rct)
+        self.rect.move_ip(+self.speed, 0)
+        if check_bound(self.rect) != (True, True):
+            self.speed *= -1
+        screen.blit(self.img, self.rect)
 #プレイヤーのキー入力
 #弾の生成、移動、描画、画面外に出た弾は削除
 #プレイヤーと弾の衝突を検出、衝突した場合はゲームを終了。
 
 #壁のインスタンスを複数つくる
-walls = [Wall() for i in range(9)]
+wall_num = 1
+lst = [0 for i in range(wall_num)]
+walls = [Wall(i*screen_height/3) for i in range(1,wall_num+1)]
 while running:
     screen.fill(white) 
 
@@ -95,18 +141,38 @@ while running:
             running = False
 
     #複数の壁を表示させる
-    for wall in walls:
+    for i, wall in enumerate(walls):
+        lst[i] = check_wall(wall.rect)
         wall.update(screen)
+        
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] and player_x > 0:
-        player_x -= player_speed
+        for data in lst:
+            if data[0] == 1:
+                player_x += 6.5
+                break
+        else:
+            player_x -= player_speed
     if keys[pygame.K_RIGHT] and player_x < screen_width - player_width:
-        player_x += player_speed
+        for data in lst:
+            if data[1] == 1:
+                player_x-=6.5
+                break
+        else:
+            player_x += player_speed
     if keys[pygame.K_UP] and player_y > 0:
-        player_y -= player_speed
+        for data in lst:
+            if data[2] == 1:
+                break
+        else:
+            player_y -= player_speed
     if keys[pygame.K_DOWN] and player_y < screen_height - player_height:
-        player_y += player_speed
+        for data in lst:
+            if data[3] == 1:
+                break
+        else:
+            player_y += player_speed
 
     #生成
     create_bullet()
@@ -119,15 +185,15 @@ while running:
         if bullet[1] > screen_height:
             bullets.remove(bullet)
 
-        if (player_x < bullet[0] < player_x + player_width or
-            bullet[0] < player_x < bullet[0] + bullet_width) and (
-            player_y < bullet[1] < player_y + player_height or
-            bullet[1] < player_y < bullet[1] + bullet_height):
+        # if (player_x < bullet[0] < player_x + player_width or
+        #     bullet[0] < player_x < bullet[0] + bullet_width) and (
+        #     player_y < bullet[1] < player_y + player_height or
+        #     bullet[1] < player_y < bullet[1] + bullet_height):
 
-            running = False  # ゲームオーバー
+        #     running = False  # ゲームオーバー
     
 
-    pygame.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
+    pygame.draw.rect(screen, black, (player_x, player_y, player_width, player_height))
     pygame.display.update()
 
     clock.tick(60)
