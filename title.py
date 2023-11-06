@@ -317,10 +317,10 @@ def main(chara_idx=0):
         
 if __name__ == "__main__":
     pg.init()
-    in_game, character_index = main()
+    in_game, chara_idx = main()
     if in_game:
         ### 別のpytonスクリプトを実行するexec()関数の利用
-        chara_idx = character_index # chara_idxはグローバル変数としてゲーム先のスクリプトで使われる
+        # chara_idxはグローバル変数としてゲーム先のスクリプトで使われる
         exec(open("ex05/nobore_kokaton.py", encoding="utf8").read())
     pg.quit()
     sys.exit()
