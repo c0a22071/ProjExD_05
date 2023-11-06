@@ -50,7 +50,6 @@ class Canvas:
         
     # キャラクター画像の情報を読み込む関数
     def load_chara_images(self):
-        """キャラクター画像情報を読み込む関数"""
         self.chara_img_lst = [] # リストの初期化
         img_size_space = 0
         playable_lst = ["ex05/3.png", "ex05/koba.png", "ex05/bluebird_enjou.png"] # プレイキャラクター
@@ -94,7 +93,6 @@ class Canvas:
                         # 簡略化できそう↓
                         if 60 <= mouse_x <= 60 + 120 and\
                             30 <= mouse_y <= 30 + 120:
-                                # print("❓")
                                 # print(f"x: {mouse_x}, y: {mouse_y}")
                                 self.chara_idx = 0
                                 return self.chara_idx
@@ -111,10 +109,10 @@ class Canvas:
                     # closeテキストをクリックしたらキャラクター画面を閉じる
                     if close_x <= mouse_x <= close_x*1.15 + close_w and\
                         close_y <= mouse_y <= close_y + close_h:
-                        """closeテキストのマウスにおけるクリック判定"""
+                        ### """closeテキストのマウスにおけるクリック判定"""
                         return self.chara_idx
                         
-                    # # クリックした位置が長方形内であれば、長方形を消す（座標closeにしたかったけど面倒くさいからあとで）
+                    # # クリックした位置が長方形内であれば、長方形を消す
                     # elif self.rect_x <= mouse_x <= self.rect_x + self.width and self.rect_y <= mouse_y <=self. rect_y + self.height:
                     #     return self.chara_idx
                         
