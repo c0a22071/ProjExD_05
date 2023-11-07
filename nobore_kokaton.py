@@ -51,20 +51,60 @@ def create_bullet():
         bullet_interval = random.randint(min_bullet_interval, max_bullet_interval)
         bullet_timer = 0
 
-# #プレイヤーと弾の衝突を判定
-# def is_collision(player_x, player_y, bullet_x, bullet_y):
-#     if player_x < bullet_x < player_x + player_width or bullet_x < player_x < bullet_x + bullet_width:
-#         if player_y < bullet_y < player_y + player_height or bullet_y < player_y < bullet_y + bullet_height:
-#             return True
-#     return False
-
 running = True
 clock = pg.time.Clock()
+
+
+
+move_key_dic = {
+                pg.K_UP: (0, -5),
+                pg.K_DOWN: (0, +5),
+                pg.K_LEFT: (-5, 0),
+                pg.K_RIGHT: (+5, 0),
+}
+
+### キャラクターの方向を管理する関数
+def player_direction(player_img):
+    """
+    引数1 player_img: 画像データ
+    """
+    # player_img = pg.image.load(f"{img_path}")
+    player_img = pg.transform.rotozoom(player_img, 0, 2.0)
+    player_trans_img = pg.transform.flip(player_img, True, False)
+    
+    return {
+        (0, 0): player_img, # 初期位置（左)
+        (+5, 0): player_trans_img,  # 右
+        (+5, -5): pg.transform.rotozoom(player_trans_img, 45, 1.0),  # 右上
+        (0, -5): pg.transform.rotozoom(player_img, -90, 1.0),  # 上 # 最初はplayer_trans_img, 90
+        (-5, -5): pg.transform.rotozoom(player_img, -45, 1.0),  # 左上
+        (-5, 0): player_img,  # 左
+        (-5, +5): pg.transform.rotozoom(player_img, 45, 1.0),  # 左下
+        (0, +5): pg.transform.rotozoom(player_trans_img, -90, 1.0),  # 下
+        (+5, +5): pg.transform.rotozoom(player_trans_img, -45, 1.0),  # 右下
+    }
 
 
 #プレイヤーのキー入力
 #弾の生成、移動、描画、画面外に出た弾は削除
 #プレイヤーと弾の衝突を検出、衝突した場合はゲームを終了。
+
+# 🚩
+### """プレイキャラクター初期設定"""
+# global playable_path # 値はtitle.pyで更新される
+global chara_idx # 値はtitle.pyで更新される
+playable_lst = ["ex05/3.png", "ex05/koba.png", "ex05/bluebird_enjou.png"]
+player_img = pg.image.load(playable_lst[chara_idx])
+player_img = pg.transform.scale(player_img, (48, 48)) # 48*48にリサイズ
+player_direction_dic = player_direction(player_img) # プレイヤーの顔の向きを決める辞書。引数には画像パスを指定
+player_img = player_direction_dic[(0, 0)] # 辞書のバリューにある初期の画像を受け取る
+player_rect = player_img.get_rect()
+player_rect.topleft = (0, 0)
+player_speed = 5 # 移動速度
+player_x = 365 # 初期x座標
+player_y = 890 # 初期y座標
+sum_move = [0, 0]
+# 🚩
 
 while running:
     screen.fill(white) # 背景色を設定
@@ -73,8 +113,8 @@ while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
+            
 
-    # プレイヤーの移動処理
     keys = pg.key.get_pressed()
     if keys[pg.K_LEFT] and player_x > 0:
         player_x -= player_speed
@@ -84,6 +124,71 @@ while running:
         player_y -= player_speed
     if keys[pg.K_DOWN] and player_y < screen_height - player_height:
         player_y += player_speed
+    
+    
+        
+    # 🚩
+    """
+    プレイヤーの移動
+    sum_moveは辞書のキーであるため、常にmax・min ±5の範囲にある
+    """
+    # 辞書のバリューは±5しかないので、keyErrorが起きないよう演算する処理
+    for key, move_tpl in move_key_dic.items():
+        if keys[key]:
+            sum_move[0] += move_tpl[0]
+            sum_move[1] += move_tpl[1]  
+
+    """
+    プレイヤーのはみ出し判定
+    """
+    # 移動範囲の制限を追加（プレイヤーが壁を突き抜けないようにする処理）
+    # 以下の5と100はどんなに座標が小さくなってもプレイヤーの座標が5と700になるようにするためのもの
+    player_x = max(5, min(player_x, screen_width - 100))
+    player_y = max(5, min(player_y, screen_height - 100))
+
+    """
+    プレイヤーの顔の向きを選択
+    """
+    # 移動値±5により、KeyErrorとなるのを防ぐための処理
+    # sum_moveを加算することで、顔の向きを更新保持する処理
+    # (10, y)のときを想定
+    if (sum_move[0] > 5):
+        sum_move = [0, 0]
+        for key, move_tpl in move_key_dic.items():
+            if keys[key]:
+                sum_move[0] += move_tpl[0]
+                sum_move[1] += move_tpl[1] 
+    # (-10, y)のときを想定
+    if (sum_move[0]  < -5):
+        sum_move = [0, 0]
+        for key, move_tpl in move_key_dic.items():
+            if keys[key]:
+                sum_move[0] += move_tpl[0]
+                sum_move[1] += move_tpl[1] 
+    # (x, 10)のときを想定
+    if (sum_move[1] > 5):
+        sum_move = [0, 0]
+        for key, move_tpl in move_key_dic.items():
+            if keys[key]:
+                sum_move[0] += move_tpl[0]
+                sum_move[1] += move_tpl[1] 
+    # (x, -10)のときを想定
+    if (sum_move[1] < -5):
+        sum_move = [0, 0]
+        for key, move_tpl in move_key_dic.items():
+            if keys[key]:
+                sum_move[0] += move_tpl[0]
+                sum_move[1] += move_tpl[1] 
+    
+    # ±5の方向のタプルの辞書キーに応じて、顔の方向の画像を受け取る
+    player_img = player_direction_dic[tuple(sum_move)]
+
+    # プレイヤーの位置を直接設定
+    player_rect.topleft = (player_x, player_y)
+        
+    # 移動後の座標にプレイヤーを表示
+    screen.blit(player_img, player_rect)
+    # 🚩
 
     # 敵（bullet）の生成
     create_bullet()
@@ -93,11 +198,8 @@ while running:
     # bullet  = 敵のx, y座標 を含むリスト
     for bullet in bullets[:]:
         bullet[1] += bullet_speed
-        
-        # 生成した敵の座標設定
         pg.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
-        
-        # 画面外のbullet（敵）を削除するための処理
+
         if bullet[1] > screen_height:
             bullets.remove(bullet)
 
@@ -113,10 +215,11 @@ while running:
             time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
             running = False  # ゲームオーバー
     
-    # プレイヤーの生成
-    pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
+
+    # screen.blit(player_img, [player_x, player_y])
+    # pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
     pg.display.update()
 
     clock.tick(60)
 
-pg.quit()
+# pg.quit()
