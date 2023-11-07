@@ -1,4 +1,3 @@
-print("hello world")
 import pygame as pg
 import random
 import time
@@ -23,7 +22,7 @@ player_speed = 10
 
 #プレイヤーの進んだ距離を記録する変数
 r = 0
-goal = 2000
+goal = 20000
 
 #弾の最大数やサイズ、速度、生成間隔を設定
 max_bullets = 10
@@ -130,6 +129,63 @@ sum_move = [0, 0]
 tmr1 = 0
 font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
 
+#壁との衝突確認用の関数だ
+def check_wall(obj: pg.Rect):
+    lst = [0 for i in range(4)]
+    for i in range(len(lst)):
+        if i == 0:
+            if (obj.right>player_x>obj.left) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
+                lst[i] = 1
+            else:
+                lst[i] = 0
+        elif i == 1:
+            if (obj.left<player_x+player_width<obj.right) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
+                lst[i] = 1
+            else:
+                lst[i] = 0
+        elif i == 2:
+            if (obj.bottom>player_y>obj.top) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
+                lst[i] = 1
+            else:
+                lst[i] = 0
+        elif i == 3:
+            if (obj.top<player_y+player_height<obj.bottom) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
+                lst[i] = 1
+            else:
+                lst[i] = 0
+            return lst
+
+#障害物(壁)のクラス
+class Wall:
+    """
+    障害物に関するクラス
+    """
+    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)]
+    def __init__(self):
+        """
+        引数に基づき壁Surfaceを作成する
+        引数1 color: 壁の色
+        """
+        color = random.choice(__class__.colors)
+        self.img = pg.Surface((280,90))
+        self.img.fill(color)
+        x = random.randint(0, screen_width-280)
+        y = random.randint(0, screen_height-90)
+        pg.draw.rect(self.img, color, (x,y,x+280,y+90))
+        self.img.set_colorkey((0, 0, 0))
+        self.rect = self.img.get_rect()
+        self.rect.center = x+140, y+45
+
+    def update(self, screen:pg.Surface):
+        """
+        引数 screen 画面Surface
+        """
+        screen.blit(self.img, self.rect)
+
+wall_num = 3
+lst = [0 for i in range(wall_num)]
+walls = [Wall() for i in range(wall_num)]
+
 while running:
     screen.fill(white) # 背景色を設定
     # exps = Explosion()
@@ -166,32 +222,55 @@ while running:
 
     keys = pg.key.get_pressed()
 
+    for i, wall in enumerate(walls):
+        lst[i] = check_wall(wall.rect)
+        wall.update(screen)
+
     if r<=goal:
         if keys[pg.K_LEFT] and player_x > 0:
-            player_x -= player_speed
+            for data in lst:
+                if data[0] == 1:
+                    player_x += player_speed+0.5
+                    break
+            else:
+                player_x -= player_speed
 
         if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
-            player_x += player_speed
+            for data in lst:
+                if data[1] == 1:
+                    player_x-=player_speed+0.5
+                    break
+            else:
+                player_x += player_speed
 
         if keys[pg.K_UP]:
-            # if player_y > 0:
-            #     player_y -= player_speed
-
-            # 画面上部4分の1範囲にいるときはスクロールする
-            if player_y < (screen_height * scroll_area):
-                bg_y += player_speed
-                bg_y_2 += player_speed
-                dark_y += player_speed
+            for data in lst:
+                if data[2] == 1:
+                    player_y += player_speed+0.5
+                    break
             else:
-                player_y -= player_speed
-            # 距離が増える
-            r += 20
+                # 画面上部4分の1範囲にいるときはスクロールする
+                if player_y < (screen_height * scroll_area):
+                    bg_y += player_speed
+                    bg_y_2 += player_speed
+                    dark_y += player_speed
+                else:
+                    player_y -= player_speed
+
+                # 距離が増える
+                r += 20
 
         if keys[pg.K_DOWN]:
             if player_y < screen_height - player_height:
-                player_y += player_speed
+                for data in lst:
+                    if data[3] == 1:
+                        player_y -= player_speed+0.5
+                        break
+                else:
+                    player_y += player_speed
                 # 距離が減る
-                r -= 10
+                if (player_y < 750):
+                    r -= 10        
     
     
         
@@ -259,7 +338,8 @@ while running:
     # 🚩
 
     # 敵（bullet）の生成
-    create_bullet()
+    if r < goal:
+        create_bullet()
     # exps = pg.sprite.Group()
     
     # 闇が完全に画面を覆いつくしたらゲームオーバー
