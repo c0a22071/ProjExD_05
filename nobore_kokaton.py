@@ -189,7 +189,7 @@ while running:
             points -= 5
             blue = True
             blue_duration = blue_effect_frames
-            player_speed *=1.5
+            player_speed *=1.2
 
 
         if blue:
