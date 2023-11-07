@@ -281,9 +281,10 @@ def create_start_text(start_text, screen_width: int, screen_height: int):
     # fillの第四引数に透過のα値を設定
     scr.fill((255,255,255,150))
     return text_width, text_height, start_text_x, start_text_y, scr
+    
             
 # メイン処理
-def main(chara_idx=0, diff="medium"):
+def main(chara_idx=0, diff = None):
     """
     引数1 chara_idx=0: キャラクター選択用の添字。デフォルト値は0なので、通常添字0のキャラクター選択が行われる
     """
@@ -355,7 +356,7 @@ def main(chara_idx=0, diff="medium"):
                     (675) <= ( mouse_y ) <= (675 + lev_h):
                         
                     # 難易度設定処理
-                    level_canvas.create_canvas(True, "level") # Trueで白い背景のみ描画
+                    diff = level_canvas.create_canvas(True, "level") # Trueで白い背景のみ描画
                     
 
         # タイトル画面のオプションボタンを表示
@@ -369,10 +370,11 @@ def main(chara_idx=0, diff="medium"):
             
         pg.display.flip()
         
-         
+        
 if __name__ == "__main__":
     pg.init()
     in_game, chara_idx, difficulty = main()
+    print(difficulty)
     if in_game:
         ### 別のpytonスクリプトを実行するexec()関数の利用
         # chara_idxはグローバル変数としてゲーム先のスクリプトで使われる

@@ -17,7 +17,7 @@ pg.display.set_caption("上に向かうゲーム")
 
 #追加部分：diff
 # 弾が出現する前の遅延を追跡する変数
-initial_bullet_delay = 120
+initial_bullet_delay = 0
 running = True
 clock = pg.time.Clock()
 delay_timer = initial_bullet_delay  # 遅延タイマーを初期化
@@ -46,6 +46,8 @@ homing_bullet_turn = 0
 # ゲームの難易度設定
 # create_bullet()の一度に生成する弾の数 もいじっていいかも
 global difficulty
+maina_speed = 0.02
+
 # difficulty = "easy"
 if difficulty == "easy":
     max_bullets = 10
@@ -77,6 +79,8 @@ else:
     bullet_width = 10
     bullet_height = 10
     bullet_speed = 10
+
+print(difficulty)
 
 min_bullet_interval = 10  # 最小の弾の出現間隔
 max_bullet_interval = 30  # 最大の弾の出現間隔
@@ -260,7 +264,7 @@ class Wall:
         self.img = pg.Surface((280,90))
         self.img.fill(color)
         x = random.randint(0, screen_width-280)
-        y = random.randint(0, screen_height-90)
+        y = random.randint(0, (screen_height-90)//5)
         pg.draw.rect(self.img, color, (x,y,x+280,y+90))
         self.img.set_colorkey((0, 0, 0))
         self.rect = self.img.get_rect()
@@ -523,14 +527,14 @@ while running:
             if bullet[1] > screen_height:
                 bullets.remove(bullet)
             
-            #追加部分：diff bullet[2]
-            if bullet[2] == "normal" and not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
-                running = False  # ゲームオーバー
-                print("ゲームオーバー01")
+            # #追加部分：diff bullet[2]
+            # if bullet[2] == "normal" and not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
+            #     running = False  # ゲームオーバー
+            #     print("ゲームオーバー01")
 
-            if bullet[2] == "homing" and not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
-                running = False  # ゲームオーバー
-                print("ゲームオーバー02")
+            # if bullet[2] == "homing" and not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
+            #     running = False  # ゲームオーバー
+            #     print("ゲームオーバー02")
 
     # 追加部分: ポイント表示
     if red:
@@ -557,16 +561,16 @@ while running:
     #pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
 
         # bulletとプレイヤーの衝突判定
-        # if (player_x < bullet[0] < player_x + player_width or
-        #     bullet[0] < player_x < bullet[0] + bullet_width) and (
-        #     player_y < bullet[1] < player_y + player_height or
-        #     bullet[1] < player_y < bullet[1] + bullet_height):
+    if (player_x < bullet[0] < player_x + player_width or
+            bullet[0] < player_x < bullet[0] + bullet_width) and (
+            player_y < bullet[1] < player_y + player_height or
+            bullet[1] < player_y < bullet[1] + bullet_height):
 
-        #     # 衝突時にプレイヤーが爆発するようにする
-        #     screen.blit(explosion_ef, [player_x, player_y])
-        #     pg.display.update()
-        #     time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
-        #     running = False  # ゲームオーバー
+            # 衝突時にプレイヤーが爆発するようにする
+            screen.blit(explosion_ef, [player_x, player_y])
+            pg.display.update()
+            time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
+            running = False  # ゲームオーバー
     
     #ゴール時の処理
     if r >= goal:
