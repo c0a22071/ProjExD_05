@@ -21,6 +21,10 @@ player_x = (screen_width - player_width) // 2
 player_y = screen_height - player_height - 30
 player_speed = 10
 
+#プレイヤーの進んだ距離を記録する変数
+r = 0
+goal = 2000
+
 #弾の最大数やサイズ、速度、生成間隔を設定
 max_bullets = 10
 bullet_width = 10
@@ -63,7 +67,7 @@ def create_bullet():
 running = True
 clock = pg.time.Clock()
 dark_y = screen_height # 闇の初期位置
-dark_speed = 1 # 闇の浸食する速さ
+dark_speed = 2 # 闇の浸食する速さ
 scroll_area = 2/5 # スクロールを開始する範囲（一番上から）
 
 # 画像をスクロールさせる為に必要な変数ども
@@ -123,9 +127,13 @@ player_y = 890 # 初期y座標
 sum_move = [0, 0]
 # 🚩
 
+tmr1 = 0
+font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+
 while running:
     screen.fill(white) # 背景色を設定
     # exps = Explosion()
+
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -145,7 +153,12 @@ while running:
     # 闇を表示
     screen.blit(d_img_top, [0, dark_y])
     screen.blit(d_img, [0, dark_y + (340 * dark_size)])
-    dark_y -= dark_speed
+    if r <= goal:
+        dark_y -= dark_speed
+
+    #時間の表示
+    txt = font.render(f"Time:{int(tmr1/60):03}", True, (0, 0, 255))
+    screen.blit(txt, [600, 10])
     
     # 背景の座標を更新
     tmr += 1
@@ -153,27 +166,32 @@ while running:
 
     keys = pg.key.get_pressed()
 
-    if keys[pg.K_LEFT] and player_x > 0:
-        player_x -= player_speed
+    if r<=goal:
+        if keys[pg.K_LEFT] and player_x > 0:
+            player_x -= player_speed
 
-    if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
-        player_x += player_speed
+        if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
+            player_x += player_speed
 
-    if keys[pg.K_UP]:
-        # if player_y > 0:
-        #     player_y -= player_speed
+        if keys[pg.K_UP]:
+            # if player_y > 0:
+            #     player_y -= player_speed
 
-        # 画面上部4分の1範囲にいるときはスクロールする
-        if player_y < (screen_height * scroll_area):
-            bg_y += player_speed
-            bg_y_2 += player_speed
-            dark_y += player_speed
-        else:
-            player_y -= player_speed
+            # 画面上部4分の1範囲にいるときはスクロールする
+            if player_y < (screen_height * scroll_area):
+                bg_y += player_speed
+                bg_y_2 += player_speed
+                dark_y += player_speed
+            else:
+                player_y -= player_speed
+            # 距離が増える
+            r += 20
 
-    if keys[pg.K_DOWN]:
-        if player_y < screen_height - player_height:
-            player_y += player_speed
+        if keys[pg.K_DOWN]:
+            if player_y < screen_height - player_height:
+                player_y += player_speed
+                # 距離が減る
+                r -= 10
     
     
         
@@ -258,21 +276,33 @@ while running:
             bullets.remove(bullet)
 
         # bulletとプレイヤーの衝突判定
-        if (player_x < bullet[0] < player_x + player_width or
-            bullet[0] < player_x < bullet[0] + bullet_width) and (
-            player_y < bullet[1] < player_y + player_height or
-            bullet[1] < player_y < bullet[1] + bullet_height):
+        # if (player_x < bullet[0] < player_x + player_width or
+        #     bullet[0] < player_x < bullet[0] + bullet_width) and (
+        #     player_y < bullet[1] < player_y + player_height or
+        #     bullet[1] < player_y < bullet[1] + bullet_height):
 
-            # 衝突時にプレイヤーが爆発するようにする
-            screen.blit(explosion_ef, [player_x, player_y])
-            pg.display.update()
-            time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
-            running = False  # ゲームオーバー
+        #     # 衝突時にプレイヤーが爆発するようにする
+        #     screen.blit(explosion_ef, [player_x, player_y])
+        #     pg.display.update()
+        #     time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
+        #     running = False  # ゲームオーバー
     
-
+    #ゴール時の処理
+    if r >= goal:
+        r = 30000
+        txt2 = font.render("game clear", True, (255, 0, 255))
+        screen.blit(txt2, [300, 500])
+    #ゴールしていないなら
+    else:
+        txt3 = font.render(f"ゴールまで{goal-r:03}m", True, (255, 0, 255))
+        screen.blit(txt3, [0, 10])
+    
     # screen.blit(player_img, [player_x, player_y])
     # pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
     pg.display.update()
+
+    if r <= goal:
+        tmr1 += 1
 
     clock.tick(60)
 
