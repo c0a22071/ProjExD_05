@@ -37,6 +37,11 @@ bullets = []
 explosion_ef = pg.image.load("ex05/explosion.gif")
 chara = pg.image.load("ex05/3.png")
 
+# 闇の画像をロード
+dark_size = 1.5
+d_img = pg.image.load("ex05/darkness.jpeg")
+d_img = pg.transform.rotozoom(d_img, 0, dark_size)
+d_img_top = pg.transform.flip(d_img, False, True)
 
 #一定の間隔で複数の弾を生成。ランダムな位置から弾を生成し、リストbulletsに追加
 def create_bullet():
@@ -277,6 +282,9 @@ def create_bullet():
 
 running = True
 clock = pg.time.Clock()
+dark_y = screen_height # 闇の初期位置
+dark_speed = 1 # 闇の浸食する速さ
+scroll_area = 2/5 # スクロールを開始する範囲（一番上から）
 
 # 画像をスクロールさせる為に必要な変数ども
 bg_height = 1080
@@ -350,6 +358,11 @@ while running:
     if bg_y_2 >= bg_height:
         bg_y_2 = -bg_height
 
+    # 闇を表示
+    screen.blit(d_img_top, [0, dark_y])
+    screen.blit(d_img, [0, dark_y + (340 * dark_size)])
+    dark_y -= dark_speed
+
     # 背景の表示
     screen.blit(bg_img, [0, bg_y])
     screen.blit(rotated_bg_img, [0, bg_y_2])
@@ -372,6 +385,7 @@ while running:
         if player_y < (screen_height * scroll_area):
             bg_y += player_speed
             bg_y_2 += player_speed
+            dark_y += player_speed
         else:
             player_y -= player_speed
 
@@ -446,6 +460,10 @@ while running:
 
     #生成
     create_bullet()
+    
+    # 闇が完全に画面を覆いつくしたらゲームオーバー
+    if dark_y < 0:
+        running = False
 
     for bullet in bullets[:]:
         bullet[1] += bullet_speed
