@@ -72,7 +72,7 @@ def player_direction(player_img):
         (0, 0): player_img, # 初期位置（左)
         (+5, 0): player_trans_img,  # 右
         (+5, -5): pg.transform.rotozoom(player_trans_img, 45, 1.0),  # 右上
-        (0, -5): pg.transform.rotozoom(player_trans_img, 90, 1.0),  # 上
+        (0, -5): pg.transform.rotozoom(player_img, -90, 1.0),  # 上 # 最初はplayer_trans_img, 90
         (-5, -5): pg.transform.rotozoom(player_img, -45, 1.0),  # 左上
         (-5, 0): player_img,  # 左
         (-5, +5): pg.transform.rotozoom(player_img, 45, 1.0),  # 左下
@@ -86,11 +86,10 @@ def player_direction(player_img):
 #プレイヤーと弾の衝突を検出、衝突した場合はゲームを終了。
 
 # 🚩
-"""
-プレイキャラクター初期設定
-"""
+### """プレイキャラクター初期設定"""
+# global playable_path # 値はtitle.pyで更新される
 global chara_idx # 値はtitle.pyで更新される
-playable_lst = ["ex05/3.png", "ex05/run.png"]
+playable_lst = ["ex05/3.png", "ex05/koba.png", "ex05/bluebird_enjou.png"]
 player_img = pg.image.load(playable_lst[chara_idx])
 player_img = pg.transform.scale(player_img, (48, 48)) # 48*48にリサイズ
 player_direction_dic = player_direction(player_img) # プレイヤーの顔の向きを決める辞書。引数には画像パスを指定
@@ -210,4 +209,4 @@ while running:
 
     clock.tick(60)
 
-pg.quit()
+# pg.quit()
