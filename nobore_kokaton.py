@@ -46,16 +46,24 @@ if difficulty == "easy":
     bullet_width = 10
     bullet_height = 10
     bullet_speed = 5
+    maina_speed = 0.02
+
 elif difficulty == "medium":
     max_bullets = 15
     bullet_width = 15
     bullet_height = 15
     bullet_speed = 10
+    maina_speed = 0.15
+
+
 elif difficulty == "hard":
     max_bullets = 20
     bullet_width = 20
     bullet_height = 20
     bullet_speed = 15
+    maina_speed = 0.2
+
+
 else:
     print("無効な難易度が選択されました。デフォルトの難易度に設定します。")
     # デフォルト値を設定
@@ -77,7 +85,7 @@ point_font = pygame.font.Font(None, 36)
 
 # 追加部分: 1秒ごとにポイントを増やすための変数
 point_increase_timer = 0
-points_per_second = 1  # 1秒ごとに増えるポイント数
+points_per_second = 10  # 1秒ごとに増えるポイント数
 
 # 追加部分: 赤くなる状態の関連変数
 red_duration = 0
@@ -104,9 +112,10 @@ def create_bullet():
             #追加部分：diff
             if random.random() < 0.10:  # 10%の確率で"homing"ラベルを持つ弾を生成
                 homing_bullet_speed = bullet_speed/1.1  # ホーミング弾の速度係数
-                bullets.append([bullet_x, bullet_y, "homing",homing_bullet_speed])
+                mai_speed = 10
+                bullets.append([bullet_x, bullet_y, "homing",homing_bullet_speed,mai_speed])
             else:
-                bullets.append([bullet_x, bullet_y, "normal"])
+                bullets.append([bullet_x, bullet_y, "normal",0,0])
         bullet_interval = random.randint(min_bullet_interval, max_bullet_interval)
         bullet_timer = 0
 
@@ -193,6 +202,8 @@ while running:
         create_bullet()
 
         homing_bullet_turn += 1  # ホーミング弾のターンを増やす
+
+       
         
         #弾の移動
         for bullet in bullets[:]:
@@ -204,7 +215,7 @@ while running:
                 # "homing" ラベルが付いた弾はプレイヤーに向かって移動
                 # プレイヤーの位置と弾の位置を考慮して、弾をプレイヤーに向かって移動させる
 
-                if homing_bullet_turn % 2 == 0:  # nターンに1度の頻度でプレイヤーを追跡する
+                if homing_bullet_turn % 1 == 0:  # nターンに1度の頻度でプレイヤーを追跡する
                     homing_bullet_speed = bullet[3]  # ホーミング弾の速度係数
 
                     player_center_x = player_x + player_width / 2
@@ -220,10 +231,10 @@ while running:
                     # ランダムな速度変化を追加
                     homing_bullet_speed += random.uniform(-1, 1)  # ランダムな速度変化 (-2 ～ 2 の範囲)
             
-                    if bullet[3] <= 0:  # ホーミング弾の持続時間が終わったら、通常の弾に変更する
+                    if  bullet[4] <= 0:  # ホーミング弾の持続時間が終わったら、通常の弾に変更する
                         bullet[2] = "normal"
                     else:
-                        bullet[3] -= 0.05  # ホーミング弾の持続時間を減少させる 
+                        bullet[4] -= maina_speed  # ホーミング弾の持続時間を減少させる
                         # プレイヤーの方向に少しずつ移動
                         angle = math.atan2(player_center_y - bullet_center_y, player_center_x - bullet_center_x)
                         bullet[0] += homing_bullet_speed * math.cos(angle)
