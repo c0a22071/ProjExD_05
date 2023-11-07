@@ -184,12 +184,12 @@ while running:
         if bullet[1] > screen_height:
             bullets.remove(bullet)
 
-        # if (player_x < bullet[0] < player_x + player_width or
-        #     bullet[0] < player_x < bullet[0] + bullet_width) and (
-        #     player_y < bullet[1] < player_y + player_height or
-        #     bullet[1] < player_y < bullet[1] + bullet_height):
+        if (player_x < bullet[0] < player_x + player_width or
+            bullet[0] < player_x < bullet[0] + bullet_width) and (
+            player_y < bullet[1] < player_y + player_height or
+            bullet[1] < player_y < bullet[1] + bullet_height):
 
-        #     running = False  # ゲームオーバー
+            running = False  # ゲームオーバー
     
 
     pygame.draw.rect(screen, black, (player_x, player_y, player_width, player_height))
