@@ -1,6 +1,6 @@
 import pygame as pg
 import sys
-import threading
+import threading # 背景動かすときに使った。その処理は現在コメントアウト中
 
 
 class Canvas:
@@ -21,6 +21,9 @@ class Canvas:
 
     # 背景用の白い長方形を作成する関数
     def background_rectangle(self, display_only=False):
+        """
+        引数1 display_only: Trueを引数に指定すれば新規ウィンドウもどきの白い長方形のみを作成出来る
+        """
         pg.draw.rect(self.screen, 
                      (255, 255, 255), 
                      (self.rect_x, self.rect_y, self.width, self.height)
@@ -30,9 +33,9 @@ class Canvas:
             pg.display.flip()
     
     # closeとテキストを表示させる関数
-    def close_text(self, received_return=True):
+    def close_text(self, received_return=False):
         """
-        引数1 received_return: Falseを引数として指定すれば、座標を戻り値を取り出せる
+        引数1 received_return: Falseを引数として指定すれば、座標を戻り値として取り出せる
         """
         font = pg.font.Font(None, 46)
         close_text = font.render("CLOSE", True, (0, 0, 0))
@@ -42,12 +45,38 @@ class Canvas:
         close_y = 900 
         
         # blitするかreturnするかの処理
-        if received_return:
+        if not received_return:
             self.screen.blit(close_text, (close_x, close_y))
         else:
             return close_w, close_h, close_x, close_y
-
         
+    # easy, normal, hardというテキストを表示させる関数
+    def level_text(self, select_level, received_return=False):
+        """
+        引数1 select_level: 値に応じた次点での任意ループ中の値を取り出す.easy:0, normal:1, haed:2
+        引数2 received_return: Falseを引数として指定すれば、座標を戻り値として取り出せる\n
+        """    
+        font = pg.font.Font(None, 100)
+        level_y = 0 # 唯一動かすyのみ初位置を設定
+        level_dic = {"Easy": (0, 255, 0), "Normal": (0, 0, 0), "Hard":(255, 0, 0)}
+        for i, (level, color) in enumerate(level_dic.items()):
+            level_text = font.render(level, True, color)
+            level_w = level_text.get_width() // 2
+            level_h = level_text.get_height()
+            level_x = self.width // 2 - level_w
+            if level_y != 0: # yが初期値じゃなかったら、加算に切り替える
+                level_y += self.height // 7 + level_h
+            else:
+                level_y = self.height // 7 + level_h
+
+            # 出力し、戻り値を受け取らない場合
+            if not received_return:
+                self.screen.blit(level_text, (level_x, level_y))
+            # 引数2に応じて任意の箇所を取り出す
+            else:
+                if (select_level is not None) and (i == select_level):
+                    return level_w, level_h, level_x, level_y     
+            
     # キャラクター画像の情報を読み込む関数
     def load_chara_images(self):
         self.chara_img_lst = [] # リストの初期化
@@ -73,7 +102,7 @@ class Canvas:
             self.screen.blit(player_img, player_rect)
     
     # 描画等の処理を行う
-    def create_canvas(self, display_only=False):
+    def create_canvas(self, display_only=False, pushed_button=None):
         """
         引数1 display_only: Trueと指定して呼び出すと、白い長方形背景を呼び出せる\n
         """
@@ -85,12 +114,12 @@ class Canvas:
                 if event.type == pg.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pg.mouse.get_pos()
                     # print(f"x: {mouse_x}, y: {mouse_y}")
-                    close_w, close_h, close_x, close_y = self.close_text(False) # Falseで値を取り出せる
-                    
+                    close_w, close_h, close_x, close_y = self.close_text(received_return=True) # Falseで値を取り出せる
+
                     if not display_only:
                         ### """プレイアブルキャラクターの変更処理"""
                         # load_chara_images()のplayer_rectを受け取り、mouseとジャッジ
-                        # 簡略化できそう↓
+                        # 簡略化できそう↓ （ウィンドウ幅まで達したらy座標を更新してx座標を初期値に戻せば一般化できそう）
                         if 60 <= mouse_x <= 60 + 120 and\
                             30 <= mouse_y <= 30 + 120:
                                 # print(f"x: {mouse_x}, y: {mouse_y}")
@@ -104,12 +133,24 @@ class Canvas:
                             30 <= mouse_y <= 30 + 120:
                                 self.chara_idx = 2
                                 return self.chara_idx
-                            
                     
+                    ### 難易度選択時の当たり判定
+                    if pushed_button == "level":
+                        if easy_x <= mouse_x <= easy_x + easy_w and\
+                            easy_y <= mouse_y <= easy_y + easy_h:
+                                return "🚩" # 難易度反映用のグローバル変数とすり合わせる
+                            
+                        if normal_x <= mouse_x <= normal_x + normal_w and\
+                            normal_y <= mouse_y <= normal_y + normal_h:
+                                return "🚩"    
+                        if hard_x <= mouse_x <= hard_x + hard_w and\
+                            hard_y <= mouse_y <= hard_y + hard_h:
+                                return "🚩"    
+                                                
+                    ### """closeテキストのマウスにおけるクリック判定"""
                     # closeテキストをクリックしたらキャラクター画面を閉じる
                     if close_x <= mouse_x <= close_x*1.15 + close_w and\
                         close_y <= mouse_y <= close_y + close_h:
-                        ### """closeテキストのマウスにおけるクリック判定"""
                         return self.chara_idx
                         
                     # # クリックした位置が長方形内であれば、長方形を消す
@@ -120,7 +161,15 @@ class Canvas:
             self.background_rectangle()  # 白い長方形を描画
             # 白い長方形背景を描画させたいだけのときの処理
             if display_only:
+                
                 self.close_text()
+                if pushed_button == "level": # 🚩not displayの処理もこのように書きなおせばmain内がスッキリする
+                    self.level_text(None)
+                    easy_w, easy_h, easy_x, easy_y = self.level_text(received_return=True, select_level=0)
+                    normal_w, normal_h, normal_x, normal_y = self.level_text(select_level=1, received_return=True)
+                    hard_w, hard_h, hard_x, hard_y = self.level_text(select_level=2, received_return=True)
+                
+                    
                 pg.display.flip()
             else:
                 self.draw_characters() # 白い長方形の上にキャラクターを描画
@@ -192,6 +241,11 @@ def option_button(text, screen, screen_width: int, screen_height: int, diff_num=
 
 # タイトル文字を作成する関数
 def title(screen, screen_width: int, screen_height: int):
+    """
+    引数1 screen: 基になるスクリーン\n
+    引数2 screen_width: screenの幅\n
+    引数3 screen_height: screen高
+    """
     font = pg.font.Font(None, 106)
     title_text = font.render("RISE! KOKATON!!", True, (0, 0, 0))
     text_width =  title_text.get_width() // 2
@@ -229,6 +283,9 @@ def create_start_text(start_text, screen_width: int, screen_height: int):
             
 # メイン処理
 def main(chara_idx=0):
+    """
+    引数1 chara_idx=0: キャラクター選択用の添字。デフォルト値は0なので、通常添字0のキャラクター選択が行われる
+    """
     # 画面の幅と高さ
     screen_width = 800
     screen_height = 1000
@@ -252,19 +309,17 @@ def main(chara_idx=0):
     level_text = font.render("LEVEL", True, (0, 0, 0))
     text_width, text_height, start_text_x, start_text_y, scr = create_start_text(start_text, screen_width, screen_height)
     
-    running = True
     in_game = False # 本編ゲームに入ったら（タイトル画面が切り替わるなら）Trueになる
     
     # 新規ウィンドウに見立てた白い長方形を作成するためのインスタンス生成
     chara_canvas = Canvas(screen, screen_width, screen_height, chara_idx)
     level_canvas = Canvas(screen, screen_width, screen_height)
-    while running:
+    while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                # ゲーム中じゃないけど、背景を動かすmove_background()の処理を停止
-                in_game = True
-                # ウィンドウを閉じる
-                running = False
+                # # ゲーム中じゃないけど、in_game=Trueで背景を動かすmove_background()の処理を停止
+                # # in_game = True
+                return in_game, chara_idx # in_gameで戻り値を設定しているので、返さないとウィンドウ閉じた時にエラー
                 
             ### マウスでクリックされたときのインベント処理
             if event.type == pg.MOUSEBUTTONDOWN and not in_game:
@@ -294,13 +349,12 @@ def main(chara_idx=0):
                 # 難易度設定を行うボタン
                 # if (lev_x) <= ( mouse_x ) <= (lev_x + lev_w) and\
                 #     (lev_y) <= ( mouse_y ) <= (lev_y + lev_h):
-                # なんだかうまくいかなかったので直接指定
+                # ↑なんだかうまくいかなかったので直接指定
                 if (190) <= ( mouse_x ) <= (190 + lev_w) and\
                     (675) <= ( mouse_y ) <= (675 + lev_h):
-                    
-                    # print("level")
+                        
                     # 難易度設定処理
-                    level_canvas.create_canvas(True) # Trueで白い背景のみ描画
+                    level_canvas.create_canvas(True, "level") # Trueで白い背景のみ描画
                     
 
         # タイトル画面のオプションボタンを表示
