@@ -45,17 +45,17 @@ if difficulty == "easy":
     max_bullets = 10
     bullet_width = 10
     bullet_height = 10
-    bullet_speed = 10
+    bullet_speed = 5
 elif difficulty == "medium":
     max_bullets = 15
     bullet_width = 15
     bullet_height = 15
-    bullet_speed = 15
+    bullet_speed = 10
 elif difficulty == "hard":
     max_bullets = 20
     bullet_width = 20
     bullet_height = 20
-    bullet_speed = 20
+    bullet_speed = 15
 else:
     print("無効な難易度が選択されました。デフォルトの難易度に設定します。")
     # デフォルト値を設定
