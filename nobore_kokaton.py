@@ -137,14 +137,15 @@ while running:
     if bg_y_2 >= bg_height:
         bg_y_2 = -bg_height
 
-    # 闇を表示
-    screen.blit(d_img_top, [0, dark_y])
-    screen.blit(d_img, [0, dark_y + (340 * dark_size)])
-    dark_y -= dark_speed
 
     # 背景の表示
     screen.blit(bg_img, [0, bg_y])
     screen.blit(rotated_bg_img, [0, bg_y_2])
+    
+    # 闇を表示
+    screen.blit(d_img_top, [0, dark_y])
+    screen.blit(d_img, [0, dark_y + (340 * dark_size)])
+    dark_y -= dark_speed
     
     # 背景の座標を更新
     tmr += 1
