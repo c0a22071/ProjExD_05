@@ -257,6 +257,9 @@ bullet_interval = 0  # 初期の出現間隔
 bullet_timer = 0  # タイマー
 bullets = []
 
+# 背景画像の読み込み
+bg_img = pg.image.load("ex05/fig/kumo38.png")
+rotated_bg_img = pg.transform.flip(bg_img, False, True)
 
 
 #一定の間隔で複数の弾を生成。ランダムな位置から弾を生成し、リストbulletsに追加
@@ -275,7 +278,12 @@ def create_bullet():
 running = True
 clock = pg.time.Clock()
 
-
+# 画像をスクロールさせる為に必要な変数ども
+bg_height = 1080
+tmr = 0
+bg_y = 0
+bg_y_2 = bg_height
+scroll_area = 2/5 # スクロールを開始する範囲（一番上から）
 
 move_key_dic = {
                 pg.K_UP: (0, -5),
@@ -336,16 +344,40 @@ while running:
         if event.type == pg.QUIT:
             running = False
             
+    # 背景が下端に到達したら反対側にやる
+    if bg_y >= bg_height:
+        bg_y = -bg_height
+    if bg_y_2 >= bg_height:
+        bg_y_2 = -bg_height
+
+    # 背景の表示
+    screen.blit(bg_img, [0, bg_y])
+    screen.blit(rotated_bg_img, [0, bg_y_2])
+    
+    # 背景の座標を更新
+    tmr += 1
 
     keys = pg.key.get_pressed()
     if keys[pg.K_LEFT] and player_x > 0:
         player_x -= player_speed
+
     if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
         player_x += player_speed
-    if keys[pg.K_UP] and player_y > 0:
-        player_y -= player_speed
-    if keys[pg.K_DOWN] and player_y < screen_height - player_height:
-        player_y += player_speed
+
+    if keys[pg.K_UP]:
+        # if player_y > 0:
+        #     player_y -= player_speed
+
+        # 画面上部4分の1範囲にいるときはスクロールする
+        if player_y < (screen_height * scroll_area):
+            bg_y += player_speed
+            bg_y_2 += player_speed
+        else:
+            player_y -= player_speed
+
+    if keys[pg.K_DOWN]:
+        if player_y < screen_height - player_height:
+            player_y += player_speed
     
     
         
