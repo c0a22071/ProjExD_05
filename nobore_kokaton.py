@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 print("hello world")
 import pygame as pg
 import random
@@ -224,7 +223,6 @@ while running:
     clock.tick(60)
 
 # pg.quit()
-=======
 print("hello world")
 import pygame as pg
 import random
@@ -439,4 +437,3 @@ while running:
     clock.tick(60)
 
 # pg.quit()
->>>>>>> title
