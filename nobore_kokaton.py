@@ -32,7 +32,7 @@ speed_multiplier = 1
 
 #プレイヤーの進んだ距離を記録する変数
 r = 0
-goal = 20000
+goal = 10000
 
 #弾の最大数やサイズ、速度、生成間隔を設定
 max_bullets = 10
@@ -159,7 +159,7 @@ def is_collision(player_x, player_y, bullet_x, bullet_y):
 running = True
 clock = pg.time.Clock()
 dark_y = screen_height # 闇の初期位置
-dark_speed = 2 # 闇の浸食する速さ
+dark_speed = 1 # 闇の浸食する速さ
 scroll_area = 2/5 # スクロールを開始する範囲（一番上から）
 
 # 画像をスクロールさせる為に必要な変数ども
@@ -292,21 +292,24 @@ while running:
             if event.type == pg.QUIT:
                 running = False
 
-        # 追加部分: 1秒ごとにポイントを増やす
-        point_increase_timer += 1
-        if point_increase_timer == 60:  # 60フレーム = 1秒
-            points += points_per_second
-            point_increase_timer = 0
+        #現在の距離がゴール以下だとスコアが増加する
+        if r <= goal:
+            # 追加部分: 1秒ごとにポイントを増やす
+            point_increase_timer += 1
+            if point_increase_timer == 60:  # 60フレーム = 1秒
+                points += points_per_second
+                point_increase_timer = 0
 
     keys = pg.key.get_pressed()
-    if keys[pg.K_LEFT] and player_x > 0:
-        player_x -= player_speed
-    if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
-        player_x += player_speed
-    if keys[pg.K_UP] and player_y > 0:
-        player_y -= player_speed
-    if keys[pg.K_DOWN] and player_y < screen_height - player_height:
-        player_y += player_speed
+    if r <= goal:
+        if keys[pg.K_LEFT] and player_x > 0:
+            player_x -= player_speed
+        if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
+            player_x += player_speed
+        if keys[pg.K_UP] and player_y > 0:
+            player_y -= player_speed
+        if keys[pg.K_DOWN] and player_y < screen_height - player_height:
+            player_y += player_speed
 
     # 追加部分: スペースキーでポイントを消費して赤くなる
     if keys[pg.K_SPACE] and points >= 20:
@@ -438,40 +441,41 @@ while running:
     # 移動値±5により、KeyErrorとなるのを防ぐための処理
     # sum_moveを加算することで、顔の向きを更新保持する処理
     # (10, y)のときを想定
-    if (sum_move[0] > 5):
-        sum_move = [0, 0]
-        for key, move_tpl in move_key_dic.items():
-            if keys[key]:
-                sum_move[0] += move_tpl[0]
-                sum_move[1] += move_tpl[1] 
-    # (-10, y)のときを想定
-    if (sum_move[0]  < -5):
-        sum_move = [0, 0]
-        for key, move_tpl in move_key_dic.items():
-            if keys[key]:
-                sum_move[0] += move_tpl[0]
-                sum_move[1] += move_tpl[1] 
-    # (x, 10)のときを想定
-    if (sum_move[1] > 5):
-        sum_move = [0, 0]
-        for key, move_tpl in move_key_dic.items():
-            if keys[key]:
-                sum_move[0] += move_tpl[0]
-                sum_move[1] += move_tpl[1] 
-    # (x, -10)のときを想定
-    if (sum_move[1] < -5):
-        sum_move = [0, 0]
-        for key, move_tpl in move_key_dic.items():
-            if keys[key]:
-                sum_move[0] += move_tpl[0]
-                sum_move[1] += move_tpl[1] 
-    
-    # ±5の方向のタプルの辞書キーに応じて、顔の方向の画像を受け取る
-    player_img = player_direction_dic[tuple(sum_move)]
-
-    # プレイヤーの位置を直接設定
-    player_rect.topleft = (player_x, player_y)
+    if r <= goal:
+        if (sum_move[0] > 5):
+            sum_move = [0, 0]
+            for key, move_tpl in move_key_dic.items():
+                if keys[key]:
+                    sum_move[0] += move_tpl[0]
+                    sum_move[1] += move_tpl[1] 
+        # (-10, y)のときを想定
+        if (sum_move[0]  < -5):
+            sum_move = [0, 0]
+            for key, move_tpl in move_key_dic.items():
+                if keys[key]:
+                    sum_move[0] += move_tpl[0]
+                    sum_move[1] += move_tpl[1] 
+        # (x, 10)のときを想定
+        if (sum_move[1] > 5):
+            sum_move = [0, 0]
+            for key, move_tpl in move_key_dic.items():
+                if keys[key]:
+                    sum_move[0] += move_tpl[0]
+                    sum_move[1] += move_tpl[1] 
+        # (x, -10)のときを想定
+        if (sum_move[1] < -5):
+            sum_move = [0, 0]
+            for key, move_tpl in move_key_dic.items():
+                if keys[key]:
+                    sum_move[0] += move_tpl[0]
+                    sum_move[1] += move_tpl[1] 
         
+        # ±5の方向のタプルの辞書キーに応じて、顔の方向の画像を受け取る
+        player_img = player_direction_dic[tuple(sum_move)]
+
+        # プレイヤーの位置を直接設定
+        player_rect.topleft = (player_x, player_y)
+            
     # 移動後の座標にプレイヤーを表示
     screen.blit(player_img, player_rect)
     # 🚩
@@ -521,10 +525,14 @@ while running:
                         angle = math.atan2(player_center_y - bullet_center_y, player_center_x - bullet_center_x)
                         bullet[0] += homing_bullet_speed * math.cos(angle)
                         bullet[1] += homing_bullet_speed * math.sin(angle)
-
+            
+            
             pg.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
 
             if bullet[1] > screen_height:
+                bullets.remove(bullet)
+            
+            if r >= goal:
                 bullets.remove(bullet)
             
             # #追加部分：diff bullet[2]
