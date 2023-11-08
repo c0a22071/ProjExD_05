@@ -32,7 +32,7 @@ speed_multiplier = 1
 
 #プレイヤーの進んだ距離を記録する変数
 r = 0
-goal = 20000
+goal = 10000
 
 #弾の最大数やサイズ、速度、生成間隔を設定
 max_bullets = 10
@@ -222,22 +222,22 @@ def check_wall(obj: pg.Rect):
     lst = [0 for i in range(4)]
     for i in range(len(lst)):
         if i == 0:
-            if (obj.right>player_x>obj.left) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
+            if (obj.right>player_x>obj.right-12) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
                 lst[i] = 1
             else:
                 lst[i] = 0
         elif i == 1:
-            if (obj.left<player_x+player_width<obj.right) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
+            if (obj.left<player_x+player_width<obj.left+12) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
                 lst[i] = 1
             else:
                 lst[i] = 0
         elif i == 2:
-            if (obj.bottom>player_y>obj.top) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
+            if (obj.bottom>player_y>obj.bottom-12) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
                 lst[i] = 1
             else:
                 lst[i] = 0
         elif i == 3:
-            if (obj.top<player_y+player_height<obj.bottom) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
+            if (obj.top<player_y+player_height<obj.top+12) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
                 lst[i] = 1
             else:
                 lst[i] = 0
@@ -270,7 +270,7 @@ class Wall:
         """
         screen.blit(self.img, self.rect)
 
-wall_num = 3
+wall_num = 2
 lst_wall = [0 for i in range(wall_num)]
 walls = [Wall() for i in range(wall_num)]
 
@@ -286,23 +286,26 @@ while running:
             if event.type == pg.QUIT:
                 running = False
 
-        # 追加部分: 1秒ごとにポイントを増やす
-        point_increase_timer += 1
-        if point_increase_timer == 60:  # 60フレーム = 1秒
-            points += points_per_second
-            point_increase_timer = 0
-    
-    print(points)
+           
+        #現在の距離がゴール以下だとスコアが増加する
+        if r <= goal:
+            # 追加部分: 1秒ごとにポイントを増やす
+            point_increase_timer += 1
+            if point_increase_timer == 60:  # 60フレーム = 1秒
+                points += points_per_second
+                point_increase_timer = 0
+
 
     keys = pg.key.get_pressed()
-    if keys[pg.K_LEFT] and player_x > 0:
-        player_x -= player_speed
-    if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
-        player_x += player_speed
-    if keys[pg.K_UP] and player_y > 0:
-        player_y -= player_speed
-    if keys[pg.K_DOWN] and player_y < screen_height - player_height:
-        player_y += player_speed
+    if r <= goal:
+        if keys[pg.K_LEFT] and player_x > 0:
+            player_x -= player_speed
+        if keys[pg.K_RIGHT] and player_x < screen_width - player_width:
+            player_x += player_speed
+        if keys[pg.K_UP] and player_y > 0:
+            player_y -= player_speed
+        if keys[pg.K_DOWN] and player_y < screen_height - player_height:
+            player_y += player_speed
 
     # 追加部分: スペースキーでポイントを消費して赤くなる
     if keys[pg.K_SPACE] and points >= 20:
@@ -426,40 +429,41 @@ while running:
     # 移動値±5により、KeyErrorとなるのを防ぐための処理
     # sum_moveを加算することで、顔の向きを更新保持する処理
     # (10, y)のときを想定
-    if (sum_move[0] > 5):
-        sum_move = [0, 0]
-        for key, move_tpl in move_key_dic.items():
-            if keys[key]:
-                sum_move[0] += move_tpl[0]
-                sum_move[1] += move_tpl[1] 
-    # (-10, y)のときを想定
-    if (sum_move[0]  < -5):
-        sum_move = [0, 0]
-        for key, move_tpl in move_key_dic.items():
-            if keys[key]:
-                sum_move[0] += move_tpl[0]
-                sum_move[1] += move_tpl[1] 
-    # (x, 10)のときを想定
-    if (sum_move[1] > 5):
-        sum_move = [0, 0]
-        for key, move_tpl in move_key_dic.items():
-            if keys[key]:
-                sum_move[0] += move_tpl[0]
-                sum_move[1] += move_tpl[1] 
-    # (x, -10)のときを想定
-    if (sum_move[1] < -5):
-        sum_move = [0, 0]
-        for key, move_tpl in move_key_dic.items():
-            if keys[key]:
-                sum_move[0] += move_tpl[0]
-                sum_move[1] += move_tpl[1] 
-    
-    # ±5の方向のタプルの辞書キーに応じて、顔の方向の画像を受け取る
-    player_img = player_direction_dic[tuple(sum_move)]
-
-    # プレイヤーの位置を直接設定
-    player_rect.topleft = (player_x, player_y)
+    if r <= goal:
+        if (sum_move[0] > 5):
+            sum_move = [0, 0]
+            for key, move_tpl in move_key_dic.items():
+                if keys[key]:
+                    sum_move[0] += move_tpl[0]
+                    sum_move[1] += move_tpl[1] 
+        # (-10, y)のときを想定
+        if (sum_move[0]  < -5):
+            sum_move = [0, 0]
+            for key, move_tpl in move_key_dic.items():
+                if keys[key]:
+                    sum_move[0] += move_tpl[0]
+                    sum_move[1] += move_tpl[1] 
+        # (x, 10)のときを想定
+        if (sum_move[1] > 5):
+            sum_move = [0, 0]
+            for key, move_tpl in move_key_dic.items():
+                if keys[key]:
+                    sum_move[0] += move_tpl[0]
+                    sum_move[1] += move_tpl[1] 
+        # (x, -10)のときを想定
+        if (sum_move[1] < -5):
+            sum_move = [0, 0]
+            for key, move_tpl in move_key_dic.items():
+                if keys[key]:
+                    sum_move[0] += move_tpl[0]
+                    sum_move[1] += move_tpl[1] 
         
+        # ±5の方向のタプルの辞書キーに応じて、顔の方向の画像を受け取る
+        player_img = player_direction_dic[tuple(sum_move)]
+
+        # プレイヤーの位置を直接設定
+        player_rect.topleft = (player_x, player_y)
+            
     # 移動後の座標にプレイヤーを表示
     screen.blit(player_img, player_rect)
 
@@ -510,20 +514,20 @@ while running:
                         angle = math.atan2(player_center_y - bullet_center_y, player_center_x - bullet_center_x)
                         bullet[0] += homing_bullet_speed * math.cos(angle)
                         bullet[1] += homing_bullet_speed * math.sin(angle)
-                        
-                        
+                   
 
             enemy_rect = enemy_img.get_rect()
             enemy_rect.topleft = (bullet[0], bullet[1])
             screen.blit(enemy_img, enemy_rect)
                 
                 
-            # pg.draw.rect()
-            # pg.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
 
             if bullet[1] > screen_height:
                 bullets.remove(bullet)
             
+
+            if r >= goal:
+                bullets.remove(bullet)
             print(red) 
             #追加部分：diff bullet[2]
             if not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
