@@ -53,39 +53,34 @@ enemy_img = pg.transform.scale(enemy_img, (bullet_width, bullet_height))
 # ゲームの難易度設定
 # create_bullet()の一度に生成する弾の数 もいじっていいかも
 global difficulty
-maina_speed = 0.02
+maina_speed = 0.2
 
 # difficulty = "easy"
 if difficulty == "easy":
     max_bullets = 10
     bullet_width = 10
     bullet_height = 10
-    bullet_speed = 5
-    maina_speed = 0.02
+    bullet_speed = 3
+    maina_speed = 0.3
 
 elif difficulty == "medium":
     max_bullets = 15
     bullet_width = 15
     bullet_height = 15
-    bullet_speed = 10
-    maina_speed = 0.15
+    bullet_speed = 6
+    maina_speed = 0.2
 
 
 elif difficulty == "hard":
     max_bullets = 20
     bullet_width = 20
     bullet_height = 20
-    bullet_speed = 15
-    maina_speed = 0.2
+    bullet_speed = 10
+    maina_speed = 0.1
 
 
 else:
     print("無効な難易度が選択されました。デフォルトの難易度に設定します。")
-    # デフォルト値を設定
-    max_bullets = 10
-    bullet_width = 10
-    bullet_height = 10
-    bullet_speed = 10
 
 print(difficulty)
 
@@ -146,13 +141,6 @@ def create_bullet():
         bullet_interval = random.randint(min_bullet_interval, max_bullet_interval)
         bullet_timer = 0
 
-#追加部分：diff
-# プレイヤーに向かって動く弾を生成
-def create_homing_bullet():
-    bullet_x = random.randint(0, screen_width - bullet_width,)
-    bullet_y = 0
-    bullets.append([bullet_x, bullet_y, "homing",homing_bullet_speed,0])
-
 #プレイヤーと弾の衝突を判定
 def is_collision(player_x, player_y, bullet_x, bullet_y):
     if (not red and
@@ -166,7 +154,7 @@ def is_collision(player_x, player_y, bullet_x, bullet_y):
 running = True
 clock = pg.time.Clock()
 dark_y = screen_height # 闇の初期位置
-dark_speed = 2 # 闇の浸食する速さ
+dark_speed = 1 # 闇の浸食する速さ
 scroll_area = 2/5 # スクロールを開始する範囲（一番上から）
 
 # 画像をスクロールさせる為に必要な変数ども
@@ -303,6 +291,8 @@ while running:
         if point_increase_timer == 60:  # 60フレーム = 1秒
             points += points_per_second
             point_increase_timer = 0
+    
+    print(points)
 
     keys = pg.key.get_pressed()
     if keys[pg.K_LEFT] and player_x > 0:
@@ -331,7 +321,7 @@ while running:
         points -= 5
         blue = True
         blue_duration = blue_effect_frames
-        player_speed *=2
+        player_speed *=1.3
 
 
     if blue:
@@ -512,8 +502,10 @@ while running:
             
                     if  bullet[4] <= 0:  # ホーミング弾の持続時間が終わったら、通常の弾に変更する
                         bullet[2] = "normal"
+                        print(bullet[2])
                     else:
                         bullet[4] -= maina_speed  # ホーミング弾の持続時間を減少させる
+                        print(bullet[4])
                         # プレイヤーの方向に少しずつ移動
                         angle = math.atan2(player_center_y - bullet_center_y, player_center_x - bullet_center_x)
                         bullet[0] += homing_bullet_speed * math.cos(angle)
@@ -532,14 +524,18 @@ while running:
             if bullet[1] > screen_height:
                 bullets.remove(bullet)
             
-            # #追加部分：diff bullet[2]
-            # if bullet[2] == "normal" and not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
-            #     running = False  # ゲームオーバー
-            #     print("ゲームオーバー01")
+            print(red) 
+            #追加部分：diff bullet[2]
+            if not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
+               
+                # 衝突時にプレイヤーが爆発するようにする
+                screen.blit(explosion_ef, [player_x, player_y])
+                pg.display.update()
+                time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
 
-            # if bullet[2] == "homing" and not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
-            #     running = False  # ゲームオーバー
-            #     print("ゲームオーバー02")
+                running = False  # ゲームオーバー
+                print("ゲームオーバー01")
+
 
     # 追加部分: ポイント表示
     if red:
@@ -564,18 +560,6 @@ while running:
 
 
     #pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
-
-        # bulletとプレイヤーの衝突判定
-    if (player_x < bullet[0] < player_x + player_width or
-            bullet[0] < player_x < bullet[0] + bullet_width) and (
-            player_y < bullet[1] < player_y + player_height or
-            bullet[1] < player_y < bullet[1] + bullet_height):
-
-            # 衝突時にプレイヤーが爆発するようにする
-            screen.blit(explosion_ef, [player_x, player_y])
-            pg.display.update()
-            time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
-            running = False  # ゲームオーバー
     
     #ゴール時の処理
     if r >= goal:
