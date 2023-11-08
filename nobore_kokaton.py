@@ -285,6 +285,8 @@ while running:
         if point_increase_timer == 60:  # 60フレーム = 1秒
             points += points_per_second
             point_increase_timer = 0
+    
+    print(points)
 
     keys = pg.key.get_pressed()
     if keys[pg.K_LEFT] and player_x > 0:
@@ -313,7 +315,7 @@ while running:
         points -= 5
         blue = True
         blue_duration = blue_effect_frames
-        player_speed *=2
+        player_speed *=1.3
 
 
     if blue:
@@ -512,11 +514,12 @@ while running:
                         bullet[0] += homing_bullet_speed * math.cos(angle)
                         bullet[1] += homing_bullet_speed * math.sin(angle)
 
-            pg.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
+            pg.draw.rect(screen, (30,144,255), [bullet[0], bullet[1], bullet_width, bullet_height])
 
             if bullet[1] > screen_height:
                 bullets.remove(bullet)
             
+            print(red) 
             #追加部分：diff bullet[2]
             if not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
                
@@ -552,18 +555,6 @@ while running:
 
 
     #pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
-
-    #     # bulletとプレイヤーの衝突判定
-    # if not red and (player_x < bullet[0] < player_x + player_width or
-    #         bullet[0] < player_x < bullet[0] + bullet_width) and (
-    #         player_y < bullet[1] < player_y + player_height or
-    #         bullet[1] < player_y < bullet[1] + bullet_height):
-
-    #         # 衝突時にプレイヤーが爆発するようにする
-    #         screen.blit(explosion_ef, [player_x, player_y])
-    #         pg.display.update()
-    #         time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
-    #         running = False  # ゲームオーバー
     
     #ゴール時の処理
     if r >= goal:
