@@ -221,7 +221,7 @@ sum_move = [0, 0]
 # 🚩
 
 tmr1 = 0
-font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30) # 創英角ポップ体サイコー！！
 
 #壁との衝突確認用の関数だ
 def check_wall(obj: pg.Rect):
@@ -536,28 +536,6 @@ while running:
             #     running = False  # ゲームオーバー
             #     print("ゲームオーバー02")
 
-    # 追加部分: ポイント表示
-    if red:
-        text = point_font.render("Points: " + str(points) + " (Red for: " + str(red_duration) + " frames)", True, (255, 0, 0))
-        screen.blit(text, (10, 10))
-    else:
-        text = point_font.render("Points: " + str(points), True, black)
-        screen.blit(text, (10, 10))
-
-    invincible_text = point_font.render("Use_Invincible: -20", True, (255, 0, 0))
-    screen.blit(invincible_text, (10, 60))
-
-    if blue:
-        text = point_font.render("Points: " + str(points) + " (Blue for: " + str(blue_duration) + " frames)", True, (0, 0, 255))
-        screen.blit(text, (10, 10))
-    else:
-        text = point_font.render("Points: " + str(points), True, black)
-        screen.blit(text, (10, 10))
-
-    invincible_text = point_font.render("Use_Acceleration: -5", True, (0, 0, 255))
-    screen.blit(invincible_text, (10, 90))
-
-
     #pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
 
         # bulletとプレイヤーの衝突判定
@@ -572,6 +550,8 @@ while running:
             time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
             running = False  # ゲームオーバー
     
+    
+    text_x, text_y = 0, 10 # テキストを表示する位置（x, y）
     #ゴール時の処理
     if r >= goal:
         r = 30000
@@ -580,7 +560,30 @@ while running:
     #ゴールしていないなら
     else:
         txt3 = font.render(f"ゴールまで{goal-r:03}m", True, (255, 0, 255))
-        screen.blit(txt3, [0, 10])
+        screen.blit(txt3, [text_x, text_y])
+
+    # 追加部分: ポイント表示
+    text_diff_x = 10 # テキストの座標をずらす為の変数
+    text_diff_y = 30
+    if red:
+        text = point_font.render("Points: " + str(points) + " (Red for: " + str(red_duration) + " frames)", True, (255, 0, 0))
+        screen.blit(text, (text_x + text_diff_x, text_y + text_diff_y))
+    else:
+        text = point_font.render("Points: " + str(points), True, black)
+        screen.blit(text, (text_x + text_diff_x, text_y + text_diff_y))
+
+    invincible_text = point_font.render("Use_Invincible: -20", True, (255, 0, 0))
+    screen.blit(invincible_text, (text_x + text_diff_x, text_y + text_diff_y * 2))
+
+    if blue:
+        text = point_font.render("Points: " + str(points) + " (Blue for: " + str(blue_duration) + " frames)", True, (0, 0, 255))
+        screen.blit(text, (text_x + text_diff_x, text_y + text_diff_y))
+    else:
+        text = point_font.render("Points: " + str(points), True, black)
+        screen.blit(text, (text_x + text_diff_x, text_y + text_diff_y))
+
+    invincible_text = point_font.render("Use_Acceleration: -5", True, (0, 0, 255))
+    screen.blit(invincible_text, (text_x + text_diff_x, text_y + text_diff_y * 3))
     
     # screen.blit(player_img, [player_x, player_y])
     # pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
