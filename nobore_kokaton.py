@@ -42,6 +42,13 @@ bullet_speed = 10
 
 homing_bullet_turn = 0
 
+
+enemy_img_lst = ["ex05/uni.png", "ex05/gomi.png", "ex05/bin.png"]
+enemy_img = enemy_img_lst[random.randint(0, len(enemy_img_lst)-1)]
+enemy_img = pg.image.load(enemy_img)
+enemy_img = pg.transform.scale(enemy_img, (bullet_width, bullet_height))
+
+            
 #追加部分：diff
 # ゲームの難易度設定
 # create_bullet()の一度に生成する弾の数 もいじっていいかも
@@ -202,7 +209,6 @@ def player_direction(player_img):
 #弾の生成、移動、描画、画面外に出た弾は削除
 #プレイヤーと弾の衝突を検出、衝突した場合はゲームを終了。
 
-# 🚩
 ### """プレイキャラクター初期設定"""
 # global playable_path # 値はtitle.pyで更新される
 global chara_idx # 値はtitle.pyで更新される
@@ -218,7 +224,7 @@ player_speed = 5 # 移動速度
 player_x = 365 # 初期x座標
 player_y = 890 # 初期y座標
 sum_move = [0, 0]
-# 🚩
+
 
 tmr1 = 0
 font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
@@ -413,28 +419,20 @@ while running:
     
     
         
-    # 🚩
-    """
-    プレイヤーの移動
-    sum_moveは辞書のキーであるため、常にmax・min ±5の範囲にある
-    """
+    # """プレイヤーの移動 sum_moveは辞書のキーであるため、常にmax・min ±5の範囲にある"""
     # 辞書のバリューは±5しかないので、keyErrorが起きないよう演算する処理
     for key, move_tpl in move_key_dic.items():
         if keys[key]:
             sum_move[0] += move_tpl[0]
             sum_move[1] += move_tpl[1]  
 
-    """
-    プレイヤーのはみ出し判定
-    """
+    ###"""プレイヤーのはみ出し判定"""
     # 移動範囲の制限を追加（プレイヤーが壁を突き抜けないようにする処理）
     # 以下の5と100はどんなに座標が小さくなってもプレイヤーの座標が5と700になるようにするためのもの
     player_x = max(5, min(player_x, screen_width - 100))
     player_y = max(5, min(player_y, screen_height - 100))
 
-    """
-    プレイヤーの顔の向きを選択
-    """
+    ###"""プレイヤーの顔の向きを選択"""
     # 移動値±5により、KeyErrorとなるのを防ぐための処理
     # sum_moveを加算することで、顔の向きを更新保持する処理
     # (10, y)のときを想定
@@ -474,7 +472,6 @@ while running:
         
     # 移動後の座標にプレイヤーを表示
     screen.blit(player_img, player_rect)
-    # 🚩
 
     # 敵（bullet）の生成
     if r < goal:
@@ -521,8 +518,16 @@ while running:
                         angle = math.atan2(player_center_y - bullet_center_y, player_center_x - bullet_center_x)
                         bullet[0] += homing_bullet_speed * math.cos(angle)
                         bullet[1] += homing_bullet_speed * math.sin(angle)
+                        
+                        
 
-            pg.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
+            enemy_rect = enemy_img.get_rect()
+            enemy_rect.topleft = (bullet[0], bullet[1])
+            screen.blit(enemy_img, enemy_rect)
+                
+                
+            # pg.draw.rect()
+            # pg.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
 
             if bullet[1] > screen_height:
                 bullets.remove(bullet)
