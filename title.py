@@ -4,7 +4,7 @@ import threading # 背景動かすときに使った。その処理は現在コ�
 
 
 class Canvas:
-    def __init__(self, screen, width: int, height: int, chara_idx=0):
+    def __init__(self, screen, width: int, height: int, chara_idx=0, diff="medium"):
         """
         引数1 main_screen: 基になるメインのスクリーン\n
         引数2 width: 新しく表示されるウィンドウもどきの幅\n
@@ -16,6 +16,7 @@ class Canvas:
         self.chara_idx = chara_idx
         self.rect_x = 0
         self.rect_y = 0
+        self.diff = diff
         
         self.load_chara_images() # 画像の読み込みを初期化
 
@@ -138,14 +139,14 @@ class Canvas:
                     if pushed_button == "level":
                         if easy_x <= mouse_x <= easy_x + easy_w and\
                             easy_y <= mouse_y <= easy_y + easy_h:
-                                return "🚩" # 難易度反映用のグローバル変数とすり合わせる
+                                return "easy" # 難易度反映用のグローバル変数とすり合わせる
                             
                         if normal_x <= mouse_x <= normal_x + normal_w and\
                             normal_y <= mouse_y <= normal_y + normal_h:
-                                return "🚩"    
+                                return "medium"   
                         if hard_x <= mouse_x <= hard_x + hard_w and\
                             hard_y <= mouse_y <= hard_y + hard_h:
-                                return "🚩"    
+                                return "hard"
                                                 
                     ### """closeテキストのマウスにおけるクリック判定"""
                     # closeテキストをクリックしたらキャラクター画面を閉じる
@@ -280,9 +281,10 @@ def create_start_text(start_text, screen_width: int, screen_height: int):
     # fillの第四引数に透過のα値を設定
     scr.fill((255,255,255,150))
     return text_width, text_height, start_text_x, start_text_y, scr
+    
             
 # メイン処理
-def main(chara_idx=0):
+def main(chara_idx=0, diff = None):
     """
     引数1 chara_idx=0: キャラクター選択用の添字。デフォルト値は0なので、通常添字0のキャラクター選択が行われる
     """
@@ -312,14 +314,14 @@ def main(chara_idx=0):
     in_game = False # 本編ゲームに入ったら（タイトル画面が切り替わるなら）Trueになる
     
     # 新規ウィンドウに見立てた白い長方形を作成するためのインスタンス生成
-    chara_canvas = Canvas(screen, screen_width, screen_height, chara_idx)
-    level_canvas = Canvas(screen, screen_width, screen_height)
+    chara_canvas = Canvas(screen, screen_width, screen_height, chara_idx, diff)
+    level_canvas = Canvas(screen, screen_width, screen_height, chara_idx, diff)
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 # # ゲーム中じゃないけど、in_game=Trueで背景を動かすmove_background()の処理を停止
                 # # in_game = True
-                return in_game, chara_idx # in_gameで戻り値を設定しているので、返さないとウィンドウ閉じた時にエラー
+                return in_game, chara_idx, diff # in_gameで戻り値を設定しているので、返さないとウィンドウ閉じた時にエラー
                 
             ### マウスでクリックされたときのインベント処理
             if event.type == pg.MOUSEBUTTONDOWN and not in_game:
@@ -334,7 +336,7 @@ def main(chara_idx=0):
                     ### "START"テキストがクリックされた時の処理
                     # ゲーム中か否かとキャラクター選択情報を返す
                     in_game = True
-                    return in_game, chara_idx
+                    return in_game, chara_idx, diff
                 
                 ###CHARACTERボタンクリックの当たり判定
                 # キャラクター選択のための新しいウィンドウを表示させる
@@ -354,7 +356,7 @@ def main(chara_idx=0):
                     (675) <= ( mouse_y ) <= (675 + lev_h):
                         
                     # 難易度設定処理
-                    level_canvas.create_canvas(True, "level") # Trueで白い背景のみ描画
+                    diff = level_canvas.create_canvas(True, "level") # Trueで白い背景のみ描画
                     
 
         # タイトル画面のオプションボタンを表示
@@ -371,7 +373,8 @@ def main(chara_idx=0):
         
 if __name__ == "__main__":
     pg.init()
-    in_game, chara_idx = main()
+    in_game, chara_idx, difficulty = main()
+    print(difficulty)
     if in_game:
         ### 別のpytonスクリプトを実行するexec()関数の利用
         # chara_idxはグローバル変数としてゲーム先のスクリプトで使われる
