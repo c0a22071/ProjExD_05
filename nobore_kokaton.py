@@ -42,43 +42,45 @@ bullet_speed = 10
 
 homing_bullet_turn = 0
 
+
+enemy_img_lst = ["ex05/uni.png", "ex05/gomi.png", "ex05/bin.png"]
+enemy_img = enemy_img_lst[random.randint(0, len(enemy_img_lst)-1)]
+enemy_img = pg.image.load(enemy_img)
+enemy_img = pg.transform.scale(enemy_img, (bullet_width, bullet_height))
+
+            
 #追加部分：diff
 # ゲームの難易度設定
 # create_bullet()の一度に生成する弾の数 もいじっていいかも
 global difficulty
-maina_speed = 0.02
+maina_speed = 0.2
 
 # difficulty = "easy"
 if difficulty == "easy":
     max_bullets = 10
     bullet_width = 10
     bullet_height = 10
-    bullet_speed = 5
-    maina_speed = 0.02
+    bullet_speed = 3
+    maina_speed = 0.3
 
 elif difficulty == "medium":
     max_bullets = 15
     bullet_width = 15
     bullet_height = 15
-    bullet_speed = 10
-    maina_speed = 0.15
+    bullet_speed = 6
+    maina_speed = 0.2
 
 
 elif difficulty == "hard":
     max_bullets = 20
     bullet_width = 20
     bullet_height = 20
-    bullet_speed = 15
-    maina_speed = 0.2
+    bullet_speed = 10
+    maina_speed = 0.1
 
 
 else:
     print("無効な難易度が選択されました。デフォルトの難易度に設定します。")
-    # デフォルト値を設定
-    max_bullets = 10
-    bullet_width = 10
-    bullet_height = 10
-    bullet_speed = 10
 
 print(difficulty)
 
@@ -139,13 +141,6 @@ def create_bullet():
         bullet_interval = random.randint(min_bullet_interval, max_bullet_interval)
         bullet_timer = 0
 
-#追加部分：diff
-# プレイヤーに向かって動く弾を生成
-def create_homing_bullet():
-    bullet_x = random.randint(0, screen_width - bullet_width,)
-    bullet_y = 0
-    bullets.append([bullet_x, bullet_y, "homing",homing_bullet_speed,0])
-
 #プレイヤーと弾の衝突を判定
 def is_collision(player_x, player_y, bullet_x, bullet_y):
     if (not red and
@@ -202,7 +197,6 @@ def player_direction(player_img):
 #弾の生成、移動、描画、画面外に出た弾は削除
 #プレイヤーと弾の衝突を検出、衝突した場合はゲームを終了。
 
-# 🚩
 ### """プレイキャラクター初期設定"""
 # global playable_path # 値はtitle.pyで更新される
 global chara_idx # 値はtitle.pyで更新される
@@ -218,32 +212,32 @@ player_speed = 5 # 移動速度
 player_x = 365 # 初期x座標
 player_y = 890 # 初期y座標
 sum_move = [0, 0]
-# 🚩
+
 
 tmr1 = 0
-font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30) # 創英角ポップ体サイコー！！
 
 #壁との衝突確認用の関数だ
 def check_wall(obj: pg.Rect):
     lst = [0 for i in range(4)]
     for i in range(len(lst)):
         if i == 0:
-            if (obj.right>player_x>obj.left) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
+            if (obj.right>player_x>obj.right-12) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
                 lst[i] = 1
             else:
                 lst[i] = 0
         elif i == 1:
-            if (obj.left<player_x+player_width<obj.right) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
+            if (obj.left<player_x+player_width<obj.left+12) and ((player_y+player_height>obj.top) and (player_y<obj.bottom)):
                 lst[i] = 1
             else:
                 lst[i] = 0
         elif i == 2:
-            if (obj.bottom>player_y>obj.top) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
+            if (obj.bottom>player_y>obj.bottom-12) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
                 lst[i] = 1
             else:
                 lst[i] = 0
         elif i == 3:
-            if (obj.top<player_y+player_height<obj.bottom) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
+            if (obj.top<player_y+player_height<obj.top+12) and ((player_x+player_width>obj.left) and (player_x<obj.right)):
                 lst[i] = 1
             else:
                 lst[i] = 0
@@ -276,7 +270,7 @@ class Wall:
         """
         screen.blit(self.img, self.rect)
 
-wall_num = 3
+wall_num = 2
 lst_wall = [0 for i in range(wall_num)]
 walls = [Wall() for i in range(wall_num)]
 
@@ -292,6 +286,7 @@ while running:
             if event.type == pg.QUIT:
                 running = False
 
+           
         #現在の距離がゴール以下だとスコアが増加する
         if r <= goal:
             # 追加部分: 1秒ごとにポイントを増やす
@@ -299,6 +294,7 @@ while running:
             if point_increase_timer == 60:  # 60フレーム = 1秒
                 points += points_per_second
                 point_increase_timer = 0
+
 
     keys = pg.key.get_pressed()
     if r <= goal:
@@ -328,7 +324,7 @@ while running:
         points -= 5
         blue = True
         blue_duration = blue_effect_frames
-        player_speed *=2
+        player_speed *=1.3
 
 
     if blue:
@@ -416,28 +412,20 @@ while running:
     
     
         
-    # 🚩
-    """
-    プレイヤーの移動
-    sum_moveは辞書のキーであるため、常にmax・min ±5の範囲にある
-    """
+    # """プレイヤーの移動 sum_moveは辞書のキーであるため、常にmax・min ±5の範囲にある"""
     # 辞書のバリューは±5しかないので、keyErrorが起きないよう演算する処理
     for key, move_tpl in move_key_dic.items():
         if keys[key]:
             sum_move[0] += move_tpl[0]
             sum_move[1] += move_tpl[1]  
 
-    """
-    プレイヤーのはみ出し判定
-    """
+    ###"""プレイヤーのはみ出し判定"""
     # 移動範囲の制限を追加（プレイヤーが壁を突き抜けないようにする処理）
     # 以下の5と100はどんなに座標が小さくなってもプレイヤーの座標が5と700になるようにするためのもの
     player_x = max(5, min(player_x, screen_width - 100))
     player_y = max(5, min(player_y, screen_height - 100))
 
-    """
-    プレイヤーの顔の向きを選択
-    """
+    ###"""プレイヤーの顔の向きを選択"""
     # 移動値±5により、KeyErrorとなるのを防ぐための処理
     # sum_moveを加算することで、顔の向きを更新保持する処理
     # (10, y)のときを想定
@@ -478,7 +466,6 @@ while running:
             
     # 移動後の座標にプレイヤーを表示
     screen.blit(player_img, player_rect)
-    # 🚩
 
     # 敵（bullet）の生成
     if r < goal:
@@ -519,67 +506,45 @@ while running:
             
                     if  bullet[4] <= 0:  # ホーミング弾の持続時間が終わったら、通常の弾に変更する
                         bullet[2] = "normal"
+                        print(bullet[2])
                     else:
                         bullet[4] -= maina_speed  # ホーミング弾の持続時間を減少させる
+                        print(bullet[4])
                         # プレイヤーの方向に少しずつ移動
                         angle = math.atan2(player_center_y - bullet_center_y, player_center_x - bullet_center_x)
                         bullet[0] += homing_bullet_speed * math.cos(angle)
                         bullet[1] += homing_bullet_speed * math.sin(angle)
-            
-            
-            pg.draw.rect(screen, black, [bullet[0], bullet[1], bullet_width, bullet_height])
+                   
+
+            enemy_rect = enemy_img.get_rect()
+            enemy_rect.topleft = (bullet[0], bullet[1])
+            screen.blit(enemy_img, enemy_rect)
+                
+                
 
             if bullet[1] > screen_height:
                 bullets.remove(bullet)
             
+
             if r >= goal:
                 bullets.remove(bullet)
-            
-            # #追加部分：diff bullet[2]
-            # if bullet[2] == "normal" and not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
-            #     running = False  # ゲームオーバー
-            #     print("ゲームオーバー01")
+            print(red) 
+            #追加部分：diff bullet[2]
+            if not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
+               
+                # 衝突時にプレイヤーが爆発するようにする
+                screen.blit(explosion_ef, [player_x, player_y])
+                pg.display.update()
+                time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
 
-            # if bullet[2] == "homing" and not red and is_collision(player_x, player_y, bullet[0], bullet[1]):
-            #     running = False  # ゲームオーバー
-            #     print("ゲームオーバー02")
-
-    # 追加部分: ポイント表示
-    if red:
-        text = point_font.render("Points: " + str(points) + " (Red for: " + str(red_duration) + " frames)", True, (255, 0, 0))
-        screen.blit(text, (10, 10))
-    else:
-        text = point_font.render("Points: " + str(points), True, black)
-        screen.blit(text, (10, 10))
-
-    invincible_text = point_font.render("Use_Invincible: -20", True, (255, 0, 0))
-    screen.blit(invincible_text, (10, 60))
-
-    if blue:
-        text = point_font.render("Points: " + str(points) + " (Blue for: " + str(blue_duration) + " frames)", True, (0, 0, 255))
-        screen.blit(text, (10, 10))
-    else:
-        text = point_font.render("Points: " + str(points), True, black)
-        screen.blit(text, (10, 10))
-
-    invincible_text = point_font.render("Use_Acceleration: -5", True, (0, 0, 255))
-    screen.blit(invincible_text, (10, 90))
+                running = False  # ゲームオーバー
+                print("ゲームオーバー01")
 
 
     #pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
-
-        # bulletとプレイヤーの衝突判定
-    if (player_x < bullet[0] < player_x + player_width or
-            bullet[0] < player_x < bullet[0] + bullet_width) and (
-            player_y < bullet[1] < player_y + player_height or
-            bullet[1] < player_y < bullet[1] + bullet_height):
-
-            # 衝突時にプレイヤーが爆発するようにする
-            screen.blit(explosion_ef, [player_x, player_y])
-            pg.display.update()
-            time.sleep(0.5) # 死亡エフェクトを目立たせるため、少しだけ停止
-            running = False  # ゲームオーバー
     
+    
+    text_x, text_y = 0, 10 # テキストを表示する位置（x, y）
     #ゴール時の処理
     if r >= goal:
         r = 30000
@@ -588,7 +553,30 @@ while running:
     #ゴールしていないなら
     else:
         txt3 = font.render(f"ゴールまで{goal-r:03}m", True, (255, 0, 255))
-        screen.blit(txt3, [0, 10])
+        screen.blit(txt3, [text_x, text_y])
+
+    # 追加部分: ポイント表示
+    text_diff_x = 10 # テキストの座標をずらす為の変数
+    text_diff_y = 30
+    if red:
+        text = point_font.render("Points: " + str(points) + " (Red for: " + str(red_duration) + " frames)", True, (255, 0, 0))
+        screen.blit(text, (text_x + text_diff_x, text_y + text_diff_y))
+    else:
+        text = point_font.render("Points: " + str(points), True, black)
+        screen.blit(text, (text_x + text_diff_x, text_y + text_diff_y))
+
+    invincible_text = point_font.render("Use_Invincible: -20", True, (255, 0, 0))
+    screen.blit(invincible_text, (text_x + text_diff_x, text_y + text_diff_y * 2))
+
+    if blue:
+        text = point_font.render("Points: " + str(points) + " (Blue for: " + str(blue_duration) + " frames)", True, (0, 0, 255))
+        screen.blit(text, (text_x + text_diff_x, text_y + text_diff_y))
+    else:
+        text = point_font.render("Points: " + str(points), True, black)
+        screen.blit(text, (text_x + text_diff_x, text_y + text_diff_y))
+
+    invincible_text = point_font.render("Use_Acceleration: -5", True, (0, 0, 255))
+    screen.blit(invincible_text, (text_x + text_diff_x, text_y + text_diff_y * 3))
     
     # screen.blit(player_img, [player_x, player_y])
     # pg.draw.rect(screen, black, [player_x, player_y, player_width, player_height])
