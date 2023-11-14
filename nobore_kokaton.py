@@ -6,7 +6,7 @@ import math
 
 pg.init()
 
-screen_width = 800
+screen_width = 1200
 screen_height = 1000
 
 white = (255, 255, 255)
@@ -67,16 +67,16 @@ elif difficulty == "medium":
     max_bullets = 15
     bullet_width = 15
     bullet_height = 15
-    bullet_speed = 6
-    maina_speed = 0.2
+    bullet_speed = 4
+    maina_speed = 0.25
 
 
 elif difficulty == "hard":
     max_bullets = 20
     bullet_width = 20
     bullet_height = 20
-    bullet_speed = 10
-    maina_speed = 0.1
+    bullet_speed = 5
+    maina_speed = 0.2
 
 
 else:
