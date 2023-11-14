@@ -43,10 +43,6 @@ bullet_speed = 10
 homing_bullet_turn = 0
 
 
-enemy_img_lst = ["ex05/uni.png", "ex05/gomi.png", "ex05/bin.png"]
-enemy_img = enemy_img_lst[random.randint(0, len(enemy_img_lst)-1)]
-enemy_img = pg.image.load(enemy_img)
-enemy_img = pg.transform.scale(enemy_img, (bullet_width, bullet_height))
 
             
 #追加部分：diff
@@ -67,7 +63,7 @@ elif difficulty == "medium":
     max_bullets = 15
     bullet_width = 15
     bullet_height = 15
-    bullet_speed = 6
+    bullet_speed = 5
     maina_speed = 0.2
 
 
@@ -75,7 +71,7 @@ elif difficulty == "hard":
     max_bullets = 20
     bullet_width = 20
     bullet_height = 20
-    bullet_speed = 10
+    bullet_speed = 7
     maina_speed = 0.1
 
 
@@ -83,6 +79,11 @@ else:
     print("無効な難易度が選択されました。デフォルトの難易度に設定します。")
 
 print(difficulty)
+
+enemy_img_lst = ["ex05/uni.png", "ex05/gomi.png", "ex05/bin.png"]
+enemy_img = enemy_img_lst[random.randint(0, len(enemy_img_lst)-1)]
+enemy_img = pg.image.load(enemy_img)
+enemy_img = pg.transform.scale(enemy_img, (bullet_width, bullet_height))
 
 min_bullet_interval = 10  # 最小の弾の出現間隔
 max_bullet_interval = 30  # 最大の弾の出現間隔
@@ -126,7 +127,7 @@ def create_bullet():
     global bullet_timer, bullet_interval
     bullet_timer += 1
     if bullet_timer > bullet_interval:
-        num_bullets = random.randint(1, 3)  # 一度に生成する弾の数
+        num_bullets = random.randint(1, 2)  # 一度に生成する弾の数
         for _ in range(num_bullets):
             bullet_x = random.randint(0, screen_width - bullet_width)
             bullet_y = 0
